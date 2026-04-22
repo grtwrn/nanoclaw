@@ -36,11 +36,14 @@ importers:
         specifier: ^4.24.0
         version: 4.26.0
       '@chat-adapter/telegram':
-        specifier: ^4.24.0
+        specifier: 4.26.0
         version: 4.26.0
       '@chat-adapter/whatsapp':
         specifier: ^4.24.0
         version: 4.26.0
+      '@clack/prompts':
+        specifier: ^1.2.0
+        version: 1.2.0
       '@onecli-sh/sdk':
         specifier: ^0.3.1
         version: 0.3.1
@@ -65,6 +68,9 @@ importers:
       cron-parser:
         specifier: 5.5.0
         version: 5.5.0
+      kleur:
+        specifier: ^4.1.5
+        version: 4.1.5
       pino:
         specifier: ^9.6.0
         version: 9.14.0
@@ -177,6 +183,12 @@ packages:
 
   '@chat-adapter/whatsapp@4.26.0':
     resolution: {integrity: sha512-4wfWUjIMZRsbKLonQc+U2rIAaG5wDr8agpDmltaUVoHwwRUhnRuf2TX3PpfjJD8qLeHYdY9e7s9f+L4h5IRiuw==}
+
+  '@clack/core@1.2.0':
+    resolution: {integrity: sha512-qfxof/3T3t9DPU/Rj3OmcFyZInceqj/NVtO9rwIuJqCUgh32gwPjpFQQp/ben07qKlhpwq7GzfWpST4qdJ5Drg==}
+
+  '@clack/prompts@1.2.0':
+    resolution: {integrity: sha512-4jmztR9fMqPMjz6H/UZXj0zEmE43ha1euENwkckKKel4XpSfokExPo5AiVStdHSAlHekz4d0CA/r45Ok1E4D3w==}
 
   '@discordjs/builders@1.14.1':
     resolution: {integrity: sha512-gSKkhXLqs96TCzk66VZuHHl8z2bQMJFGwrXC0f33ngK+FLNau4hU1PYny3DNJfNdSH+gVMzE85/d5FQ2BpcNwQ==}
@@ -616,36 +628,36 @@ packages:
     resolution: {integrity: sha512-Xt0x5Kl6qBoWhGFypb8ykyP+c5kT7scmRPs1uJidSPOaRgkMJ/4y41QpmZCWCBUMmZtf/O0VktgQio6rLXT94w==}
     engines: {node: '>=18.x'}
 
-  '@matrix-org/matrix-sdk-crypto-wasm@18.0.0':
-    resolution: {integrity: sha512-88+n+dvxLI1cjS10UIlKXVYK7TGWbpAnnaDC9fow7ch/hCvdu3dFhJ3tS3/13N9s9+1QFXB4FFuommj+tHJPhQ==}
+  '@matrix-org/matrix-sdk-crypto-wasm@18.1.0':
+    resolution: {integrity: sha512-GxXK2U39+2qWNvR3fXJY7nxdikvpiT17RaS0/Dktk6R8FMKDk3vm79Hq65yrCWLBmT7pJZoerfILNZqhrcUHrg==}
     engines: {node: '>= 18'}
 
-  '@microsoft/teams.api@2.0.7':
-    resolution: {integrity: sha512-SQu7d/alQ3ZKgBX2ur/0VbtxsDLMZb3HmGUVnzIWkvSzFkGcPQ8uPK//670gpEyFJVh2qqP0wFwOwH98/tO57w==}
+  '@microsoft/teams.api@2.0.8':
+    resolution: {integrity: sha512-N13idaRZNnfL7aefzsn2rhPtujqke1QVM81bNWq1XeK+5yeXod3aLTmBY701DEKkZUXiSG0AogvzkNwVnBw4+g==}
     engines: {node: '>=20'}
 
-  '@microsoft/teams.apps@2.0.7':
-    resolution: {integrity: sha512-1y7mLrM/HZfRn8tHK/vInMZCpMXjRPQ6QawboNXttJqEQxvlwNRK9nzDjnzuIyBF32oTVt/ro7Id38oNnhaXeQ==}
+  '@microsoft/teams.apps@2.0.8':
+    resolution: {integrity: sha512-6YBOxnQSoEPu841zMa1SDBdwH3gsuzrz0LCONuaGOHJ3Kmv2S+7ih1DqEx4Ak3iAYHeCvxnWGqjcYSBhgeiuMQ==}
     engines: {node: '>=20'}
 
-  '@microsoft/teams.cards@2.0.7':
-    resolution: {integrity: sha512-HUGw5OWKc6eCdinRLYqHgFyvScTplQs+PqUqHnf79wH1QNqAKCX+p7uF71YxTm383laJYOqDGYU6uvFEoTvOsA==}
+  '@microsoft/teams.cards@2.0.8':
+    resolution: {integrity: sha512-WrGAgkDKqhvFhnsKPwFeKTkhAXu/fbySxq5+uIOqY1ffdgiEdEoj6c0cjyQJy0HJ9B5u/0SQ4hO2KUc6jlZSZw==}
     engines: {node: '>=20'}
 
-  '@microsoft/teams.common@2.0.7':
-    resolution: {integrity: sha512-O3qWC/RbLbiJSAHyk1j5Ybx3GAxmM7DhFbfLW5a2sebEQ+Sn/hB/8rr+IsxlG2FAaUgrcKkir8B55wuKTlZPYw==}
+  '@microsoft/teams.common@2.0.8':
+    resolution: {integrity: sha512-nkolOYX9qCpfK2uitiuAYm3EvMleHer5P3OCx3IBOp2gxkkFvNNOcOIDXuPZ6BtiENt47FPn4fYMMgJrawCHcA==}
     engines: {node: '>=20'}
 
-  '@microsoft/teams.graph-endpoints@2.0.7':
-    resolution: {integrity: sha512-VYx2CeSqZnjsp8fvVgt0f5PahXk2OKBKUHo1ICPLX/pvzsxjB8+RYU/5dvXVzPweNRTbIJR5gAugzyZwL/1miQ==}
+  '@microsoft/teams.graph-endpoints@2.0.8':
+    resolution: {integrity: sha512-KjDhMWn8ZcwTjDOw1hL0By/HvHEXe5+Bzy8tmEOsqPGUc/1HfwtBZAYsr8FUVBSBe0CObLYs2Pkh0wiHqWNNPw==}
     engines: {node: '>=20'}
 
-  '@microsoft/teams.graph@2.0.7':
-    resolution: {integrity: sha512-hHX1gsCL7GFhAUz1CAT+PFar5U20/nA6sV4yJJaLygu0Wft10XgX3tJh1FckXBQlO1vCaDRtmcMJ9Eey0Z/wRg==}
+  '@microsoft/teams.graph@2.0.8':
+    resolution: {integrity: sha512-M/skUNJFD+lIVNa+ng0iy8t3sFmki6NOiWpGwnWOBAKFgTYBTJVtPfWm6SNdGFTCUsV9rjep4s9S5zTKUg2HJg==}
     engines: {node: '>=20'}
 
-  '@napi-rs/wasm-runtime@1.1.3':
-    resolution: {integrity: sha512-xK9sGVbJWYb08+mTJt3/YV24WxvxpXcXtP6B172paPZ+Ts69Re9dAr7lKwJoeIx8OoeuimEiRZ7umkiUVClmmQ==}
+  '@napi-rs/wasm-runtime@1.1.4':
+    resolution: {integrity: sha512-3NQNNgA1YSlJb/kMH1ildASP9HW7/7kYnRI2szWJaofaS1hWmbGI4H+d3+22aGzXXN9IJ+n+GiFVcGipJP18ow==}
     peerDependencies:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
@@ -779,96 +791,112 @@ packages:
   '@react-email/body@0.2.1':
     resolution: {integrity: sha512-ljDiQiJDu/Fq//vSIIP0z5Nuvt4+DX1RqGasstChDGJB/14ogd4VdNS9aacoede/ZjGy3o3Qb+cxyS+XgM6SwQ==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/button@0.2.1':
     resolution: {integrity: sha512-qXyj7RZLE7POy9BMKSoqQ00tOXThjOZSUnI2Yu9i29IHngPlmrNayIWBoVKtElES7OWwypUcpiajwi1mUWx6/A==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/code-block@0.2.1':
     resolution: {integrity: sha512-M3B7JpVH4ytgn83/ujRR1k1DQHvTeABiDM61OvAbjLRPhC/5KLHU5KkzIbbuGIrjWwxAbL1kSQzU8MhLEtSxyw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/code-inline@0.0.6':
     resolution: {integrity: sha512-jfhebvv3dVsp3OdPgKXnk8+e2pBiDVZejDOBFzBa/IblrAJ9cQDkN6rBD5IyEg8hTOxwbw3iaI/yZFmDmIguIA==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/column@0.0.14':
     resolution: {integrity: sha512-f+W+Bk2AjNO77zynE33rHuQhyqVICx4RYtGX9NKsGUg0wWjdGP0qAuIkhx9Rnmk4/hFMo1fUrtYNqca9fwJdHg==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/components@1.0.8':
     resolution: {integrity: sha512-zY81ED6o5MWMzBkr9uZFuT24lWarT+xIbOZxI6C9dsFmCWBczM8IE1BgOI8rhpUK4JcYVDy1uKxYAFqsx2Bc4w==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/container@0.0.16':
     resolution: {integrity: sha512-QWBB56RkkU0AJ9h+qy33gfT5iuZknPC7Un/IjZv9B0QmMIK+WWacc0cH6y2SV5Cv/b99hU94fjEMOOO4enpkbQ==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/font@0.0.10':
     resolution: {integrity: sha512-0urVSgCmQIfx5r7Xc586miBnQUVnGp3OTYUm8m5pwtQRdTRO5XrTtEfNJ3JhYhSOruV0nD8fd+dXtKXobum6tA==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/head@0.0.13':
     resolution: {integrity: sha512-AJg6le/08Gz4tm+6MtKXqtNNyKHzmooOCdmtqmWxD7FxoAdU1eVcizhtQ0gcnVaY6ethEyE/hnEzQxt1zu5Kog==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/heading@0.0.16':
     resolution: {integrity: sha512-jmsKnQm1ykpBzw4hCYHwBkt5pW2jScXffPeEH5ZRF5tZeF5b1pvlFTO9han7C0pCkZYo1kEvWiRtx69yfCIwuw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/hr@0.0.12':
     resolution: {integrity: sha512-TwmOmBDibavUQpXBxpmZYi2Iks/yeZOzFYh+di9EltMSnEabH8dMZXrl+pxNXzCgZ2XE8HY7VmUL65Lenfu5PA==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/html@0.0.12':
     resolution: {integrity: sha512-KTShZesan+UsreU7PDUV90afrZwU5TLwYlALuCSU0OT+/U8lULNNbAUekg+tGwCnOfIKYtpDPKkAMRdYlqUznw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/img@0.0.12':
     resolution: {integrity: sha512-sRCpEARNVTf3FQhZOC+JTvu5r6ubiYWkT0ucYXg8ctkyi4G8QG+jgYPiNUqVeTLA2STOfmPM/nrk1nb84y6CPQ==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/link@0.0.13':
     resolution: {integrity: sha512-lkWc/NjOcefRZMkQoSDDbuKBEBDES9aXnFEOuPH845wD3TxPwh+QTf0fStuzjoRLUZWpHnio4z7qGGRYusn/sw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/markdown@0.0.18':
     resolution: {integrity: sha512-gSuYK5fsMbGk87jDebqQ6fa2fKcWlkf2Dkva8kMONqLgGCq8/0d+ZQYMEJsdidIeBo3kmsnHZPrwdFB4HgjUXg==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/preview@0.0.14':
     resolution: {integrity: sha512-aYK8q0IPkBXyMsbpMXgxazwHxYJxTrXrV95GFuu2HbEiIToMwSyUgb8HDFYwPqqfV03/jbwqlsXmFxsOd+VNaw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
@@ -882,18 +910,21 @@ packages:
   '@react-email/row@0.0.13':
     resolution: {integrity: sha512-bYnOac40vIKCId7IkwuLAAsa3fKfSfqCvv6epJKmPE0JBuu5qI4FHFCl9o9dVpIIS08s/ub+Y/txoMt0dYziGw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/section@0.0.17':
     resolution: {integrity: sha512-qNl65ye3W0Rd5udhdORzTV9ezjb+GFqQQSae03NDzXtmJq6sqVXNWNiVolAjvJNypim+zGXmv6J9TcV5aNtE/w==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/tailwind@2.0.5':
     resolution: {integrity: sha512-7Ey+kiWliJdxPMCLYsdDts8ffp4idlP//w4Ui3q/A5kokVaLSNKG8DOg/8qAuzWmRiGwNQVOKBk7PXNlK5W+sg==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       '@react-email/body': 0.2.1
       '@react-email/button': 0.2.1
@@ -932,41 +963,45 @@ packages:
   '@react-email/text@0.1.6':
     resolution: {integrity: sha512-TYqkioRS45wTR5il3dYk/SbUjjEdhSwh9BtRNB99qNH1pXAwA45H7rAuxehiu8iJQJH0IyIr+6n62gBz9ezmsw==}
     engines: {node: '>=20.0.0'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
-  '@redis/bloom@5.11.0':
-    resolution: {integrity: sha512-KYiVilAhAFN3057afUb/tfYJpsEyTkQB+tQcn5gVVA7DgcNOAj8lLxe4j8ov8BF6I9C1Fe/kwlbuAICcTMX8Lw==}
-    engines: {node: '>= 18'}
+  '@redis/bloom@5.12.1':
+    resolution: {integrity: sha512-PUUfv+ms7jgPSBVoo/DN4AkPHj4D5TZSd6SbJX7egzBplkYUcKmHRE8RKia7UtZ8bSQbLguLvxVO+asKtQfZWA==}
+    engines: {node: '>= 18.19.0'}
     peerDependencies:
-      '@redis/client': ^5.11.0
+      '@redis/client': ^5.12.1
 
-  '@redis/client@5.11.0':
-    resolution: {integrity: sha512-GHoprlNQD51Xq2Ztd94HHV94MdFZQ3CVrpA04Fz8MVoHM0B7SlbmPEVIjwTbcv58z8QyjnrOuikS0rWF03k5dQ==}
-    engines: {node: '>= 18'}
+  '@redis/client@5.12.1':
+    resolution: {integrity: sha512-7aPGWeqA3uFm43o19umzdl16CEjK/JQGtSXVPevplTaOU3VJA/rseBC1QvYUz9lLDIMBimc4SW/zrW4S89BaCA==}
+    engines: {node: '>= 18.19.0'}
     peerDependencies:
       '@node-rs/xxhash': ^1.1.0
+      '@opentelemetry/api': '>=1 <2'
     peerDependenciesMeta:
       '@node-rs/xxhash':
         optional: true
+      '@opentelemetry/api':
+        optional: true
 
-  '@redis/json@5.11.0':
-    resolution: {integrity: sha512-1iAy9kAtcD0quB21RbPTbUqqy+T2Uu2JxucwE+B4A+VaDbIRvpZR6DMqV8Iqaws2YxJYB3GC5JVNzPYio2ErUg==}
-    engines: {node: '>= 18'}
+  '@redis/json@5.12.1':
+    resolution: {integrity: sha512-eOze75esLve4vfqDel7aMX08CNaiLLQS2fV8mpRN9NxPe1rVR4vQyYiW/OgtGUysF6QOr9ANhfxABKNOJfXdKg==}
+    engines: {node: '>= 18.19.0'}
     peerDependencies:
-      '@redis/client': ^5.11.0
+      '@redis/client': ^5.12.1
 
-  '@redis/search@5.11.0':
-    resolution: {integrity: sha512-g1l7f3Rnyk/xI99oGHIgWHSKFl45Re5YTIcO8j/JE8olz389yUFyz2+A6nqVy/Zi031VgPDWscbbgOk8hlhZ3g==}
-    engines: {node: '>= 18'}
+  '@redis/search@5.12.1':
+    resolution: {integrity: sha512-ItlxbxC9cKI6IU1TLWoczwJCRb6TdmkEpWv05UrPawqaAnWGRu3rcIqsc5vN483T2fSociuyV1UkWIL5I4//2w==}
+    engines: {node: '>= 18.19.0'}
     peerDependencies:
-      '@redis/client': ^5.11.0
+      '@redis/client': ^5.12.1
 
-  '@redis/time-series@5.11.0':
-    resolution: {integrity: sha512-TWFeOcU4xkj0DkndnOyhtxvX1KWD+78UHT3XX3x3XRBUGWeQrKo3jqzDsZwxbggUgf9yLJr/akFHXru66X5UQA==}
-    engines: {node: '>= 18'}
+  '@redis/time-series@5.12.1':
+    resolution: {integrity: sha512-c6JL6E3EcZJuNqKFz+KM+l9l5mpcQiKvTwgA3blt5glWJ8hjDk0yeHN3beE/MpqYIQ8UEX44ItQzgkE/gCBELQ==}
+    engines: {node: '>= 18.19.0'}
     peerDependencies:
-      '@redis/client': ^5.11.0
+      '@redis/client': ^5.12.1
 
   '@resend/chat-sdk-adapter@0.1.1':
     resolution: {integrity: sha512-8rGteBhvmIOU38zUun6Jwfgw3hfxKmyhvz329lJ6XIKidHy9wTWMoV9DpuR6typiiKhNnSZeDEB6/3kE3S2J3A==}
@@ -1113,12 +1148,12 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@thi.ng/bitstream@2.4.45':
-    resolution: {integrity: sha512-LKOEJmmEvgUy1LKn79Hpc+EBMekGs5UOTqH3gcftl99w7fpzUAWg4gFmav34f/zw0SbjbnzO8EDmGUyyZW7dcA==}
+  '@thi.ng/bitstream@2.4.46':
+    resolution: {integrity: sha512-p2cZshqkY/YX8EtNZEw29wbNF2vAJfi6A+yTkLUzERMpYIIdQz6bIt8rSJFyPqZcB5cI+tauXWwBXFbbsXuqKg==}
     engines: {node: '>=18'}
 
-  '@thi.ng/errors@2.6.7':
-    resolution: {integrity: sha512-jFvECE7RPtB8P3BPL+XYOgGZqRheVtq32DAy3LJwbqgFP2v/lSyTwzvA47KsDKn1VDOGPGBhR5cM8eR7mnNbdQ==}
+  '@thi.ng/errors@2.6.8':
+    resolution: {integrity: sha512-npKV69U8JYpMLZiqhUWf9dmd9Esjy36o7CxxGUgoLRS4ZmTLuIKqKfFnZuLrx6D5Mmb+D9ARCDR7qXO1QJV8DQ==}
     engines: {node: '>=18'}
 
   '@tokenizer/token@0.3.0':
@@ -1383,8 +1418,8 @@ packages:
     resolution: {integrity: sha512-dK9Z/P83C/rBfTrXXgPD3jZ+aXxx2o/P4rq8+H1JqxbXklitEeJw4CrcwMC5CkON3CX3yy2gaWnIEVYejYh0zQ==}
     engines: {node: '>=14'}
 
-  axios@1.15.0:
-    resolution: {integrity: sha512-wWyJDlAatxk30ZJer+GeCWS209sA42X+N5jU2jy6oHTp7ufw8uzUTVFBX9+wTfAlhiJXGS0Bq7X6efruWjuK9Q==}
+  axios@1.15.2:
+    resolution: {integrity: sha512-wLrXxPtcrPTsNlJmKjkPnNPK2Ihe0hn0wGSaTEiHRPxwjvJwT3hKmXF4dpqxmPO9SoNb2FsYXj/xEo0gHN+D5A==}
 
   bail@2.0.2:
     resolution: {integrity: sha512-0xO6mYd7JB2YesxDKplafRpsiOzPt9V02ddPCLbY1xYGPOX24NTyN50qnUxgCPcSoYMhKpAuBTjQoRZCAkUDRw==}
@@ -1645,15 +1680,15 @@ packages:
   discord-api-types@0.37.120:
     resolution: {integrity: sha512-7xpNK0EiWjjDFp2nAhHXezE4OUWm7s1zhc/UXXN6hnFFU8dfoPHgV0Hx0RPiCa3ILRpdeh152icc68DGCyXYIw==}
 
-  discord-api-types@0.38.46:
-    resolution: {integrity: sha512-Ae7NcagMG+FPxwuQxGCPEHmLCKMm8YBMPWEuF5J3L+KWrlH4XGR3UoVo4Ne8bwhhHXbpf+DxDqOeW2jBFupXCQ==}
+  discord-api-types@0.38.47:
+    resolution: {integrity: sha512-XgXQodHQBAE6kfD7kMvVo30863iHX1LHSqNq6MGUTDwIFCCvHva13+rwxyxVXDqudyApMNAd32PGjgVETi5rjA==}
 
   discord-interactions@4.4.0:
     resolution: {integrity: sha512-jjJx8iwAeJcj8oEauV43fue9lNqkf38fy60aSs2+G8D1nJmDxUIrk08o3h0F3wgwuBWWJUZO+X/VgfXsxpCiJA==}
     engines: {node: '>=18.4.0'}
 
-  discord.js@14.26.2:
-    resolution: {integrity: sha512-feShi+gULJ6R2MAA4/KkCFnkJcuVrROJrKk4czplzq8gE1oqhqgOy9K0Scu44B8oGeWKe04egquzf+ia6VtXAw==}
+  discord.js@14.26.3:
+    resolution: {integrity: sha512-XEKtYn28YFsiJ5l4fLRyikdbo6RD5oFyqfVHQlvXz2104JhH/E8slN28dbky05w3DCrJcNVWvhVvcJCTSl/KIg==}
     engines: {node: '>=18'}
 
   dom-serializer@2.0.0:
@@ -1842,6 +1877,15 @@ packages:
   fast-sha256@1.3.0:
     resolution: {integrity: sha512-n11RGP/lrWEFI/bWdygLxhI+pVeo1ZYIVwvvPkW7azl/rOy+F3HYRZ2K5zeE9mmkhQppyv9sQFx0JM9UabnpPQ==}
 
+  fast-string-truncated-width@1.2.1:
+    resolution: {integrity: sha512-Q9acT/+Uu3GwGj+5w/zsGuQjh9O1TyywhIwAxHudtWrgF09nHOPrvTLhQevPbttcxjr/SNN7mJmfOw/B1bXgow==}
+
+  fast-string-width@1.1.0:
+    resolution: {integrity: sha512-O3fwIVIH5gKB38QNbdg+3760ZmGz0SZMgvwJbA1b2TGXceKE6A2cOlfogh1iw8lr049zPyd7YADHy+B7U4W9bQ==}
+
+  fast-wrap-ansi@0.1.6:
+    resolution: {integrity: sha512-HlUwET7a5gqjURj70D5jl7aC3Zmy4weA1SHUfM0JFI0Ptq987NH2TwbBFLoERhfwk+E+eaq4EK3jXoT+R3yp3w==}
+
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
     engines: {node: '>=12.0.0'}
@@ -1995,8 +2039,8 @@ packages:
     resolution: {integrity: sha512-iZyKG96/JwPz1N55vj2Ie2vXbhu440zfUfJvSwEqEbeLluk7NnapfGqa7LH0mOsnDxTF85Mx8/dyR6HfqcbmbQ==}
     engines: {node: '>=20'}
 
-  hasown@2.0.2:
-    resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
+  hasown@2.0.3:
+    resolution: {integrity: sha512-ej4AhfhfL2Q2zpMmLo7U1Uv9+PyhIZpgQLGT1F9miIGmiCJIoCgSmczFdrc97mWT4kVY72KA+WnnhJ5pghSvSg==}
     engines: {node: '>= 0.4'}
 
   hast-util-to-html@9.0.5:
@@ -2149,6 +2193,10 @@ packages:
 
   keyv@5.6.0:
     resolution: {integrity: sha512-CYDD3SOtsHtyXeEORYRx2qBtpDJFjRTGXUtmNEMGyzYOKj1TE3tycdlho7kA1Ufx9OYWZzg52QFBGALTirzDSw==}
+
+  kleur@4.1.5:
+    resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
+    engines: {node: '>=6'}
 
   leac@0.6.0:
     resolution: {integrity: sha512-y+SqErxb8h7nE/fiEX07jsbuhrpO9lL8eca7/Y1nuWV2moNlXhyd59iDGcRf6moVyDMbmTNzL40SUyrFU/yDpg==}
@@ -2677,8 +2725,8 @@ packages:
   postal-mime@2.7.3:
     resolution: {integrity: sha512-MjhXadAJaWgYzevi46+3kLak8y6gbg0ku14O1gO/LNOuay8dO+1PtcSGvAdgDR0DoIsSaiIA8y/Ddw6MnrO0Tw==}
 
-  postcss@8.5.9:
-    resolution: {integrity: sha512-7a70Nsot+EMX9fFU3064K/kdHWZqGVY+BADLyXc8Dfv+mTLLVl6JzJpPaCZ2kQL9gIJvKXSLMHhqdRRjwQeFtw==}
+  postcss@8.5.10:
+    resolution: {integrity: sha512-pMMHxBOZKFU6HgAZ4eyGnwXF/EvPGGqUr0MnZ5+99485wwW41kW91A4LOGxSHhgugZmSChL5AlElNdwlNgcnLQ==}
     engines: {node: ^10 || ^12 || >=14}
 
   prebuild-install@7.1.3:
@@ -2718,8 +2766,8 @@ packages:
     resolution: {integrity: sha512-AAmHtD5pXgZfi7GMpllpO3q1Xw1OYldr+dMUlAnffGTAhqkg72WdmSY71uKBF/JuyiKs8psYbtKrhi0ASCD8qw==}
     hasBin: true
 
-  protobufjs@7.5.4:
-    resolution: {integrity: sha512-CvexbZtbov6jW2eXAvLukXjXUW1TzFaivC46BpWc/3BpcCysb5Vffu+B3XHMm8lVEuy2Mm4XGex8hBSg1yapPg==}
+  protobufjs@7.5.5:
+    resolution: {integrity: sha512-3wY1AxV+VBNW8Yypfd1yQY9pXnqTAN+KwQxL8iYm3/BjKYMNg4i0owhEe26PWDOMaIrzeeF98Lqd5NGz4omiIg==}
     engines: {node: '>=12.0.0'}
 
   proxy-addr@2.0.7:
@@ -2793,9 +2841,9 @@ packages:
     resolution: {integrity: sha512-57frrGM/OCTLqLOAh0mhVA9VBMHd+9U7Zb2THMGdBUoZVOtGbJzjxsYGDJ3A9AYYCP4hn6y1TVbaOfzWtm5GFg==}
     engines: {node: '>= 12.13.0'}
 
-  redis@5.11.0:
-    resolution: {integrity: sha512-YwXjATVDT+AuxcyfOwZn046aml9jMlQPvU1VXIlLDVAExe0u93aTfPYSeRgG4p9Q/Jlkj+LXJ1XEoFV+j2JKcQ==}
-    engines: {node: '>= 18'}
+  redis@5.12.1:
+    resolution: {integrity: sha512-LDsoVvb/CpoV9EN3FXvgvSHNJWuCIzl9MiO3ppOevuGLpSGJhwfQjpEwfFJcQvNSddHADDdZaWx0HnmMxRXG7g==}
+    engines: {node: '>= 18.19.0'}
 
   reflect-metadata@0.2.2:
     resolution: {integrity: sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q==}
@@ -2927,6 +2975,9 @@ packages:
   simple-yenc@1.0.4:
     resolution: {integrity: sha512-5gvxpSd79e9a3V4QDYUqnqxeD4HGlhCakVpb6gMnDD7lexJggSBJRBO5h52y/iJrdXRilX9UCuDaIJhSWm5OWw==}
 
+  sisteransi@1.0.5:
+    resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
+
   socket.io-client@4.8.3:
     resolution: {integrity: sha512-uP0bpjWrjQmUt5DTHq9RuoCBdFJF10cdX9X+a368j/Ft0wmaVgxlrjvK3kjvgCODOMMOz9lcaRzxmso0bTWZ/g==}
     engines: {node: '>=10.0.0'}
@@ -2995,8 +3046,8 @@ packages:
   svix@1.84.1:
     resolution: {integrity: sha512-K8DPPSZaW/XqXiz1kEyzSHYgmGLnhB43nQCMeKjWGCUpLIpAMMM8kx3rVVOSm6Bo6EHyK1RQLPT4R06skM/MlQ==}
 
-  tailwindcss@4.2.2:
-    resolution: {integrity: sha512-KWBIxs1Xb6NoLdMVqhbhgwZf2PGBpPEiwOqgI4pFIYbNTfBXiKYyWoTsXgBQ9WFg/OlhnvHaY+AEpW7wSmFo2Q==}
+  tailwindcss@4.2.4:
+    resolution: {integrity: sha512-HhKppgO81FQof5m6TEnuBWCZGgfRAWbaeOaGT00KOy/Pf/j6oUihdvBpA7ltCeAvZpFhW3j0PTclkxsd4IXYDA==}
 
   tar-fs@2.1.4:
     resolution: {integrity: sha512-mDAjwmZdh7LTT6pNleZ05Yt65HC3E+NiQzl672vQG38jIrehtJk/J3mNwIg+vShQPcLF/LV7CMnDW6vjj6sfYQ==}
@@ -3338,6 +3389,7 @@ snapshots:
       node-html-parser: 7.1.0
     transitivePeerDependencies:
       - '@node-rs/xxhash'
+      - '@opentelemetry/api'
       - supports-color
 
   '@bitbasti/chat-adapter-webex@0.1.0(chat@4.26.0)':
@@ -3371,7 +3423,7 @@ snapshots:
       chat: 4.26.0
       discord-api-types: 0.37.120
       discord-interactions: 4.4.0
-      discord.js: 14.26.2
+      discord.js: 14.26.3
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -3428,18 +3480,19 @@ snapshots:
   '@chat-adapter/state-redis@4.26.0':
     dependencies:
       chat: 4.26.0
-      redis: 5.11.0
+      redis: 5.12.1
     transitivePeerDependencies:
       - '@node-rs/xxhash'
+      - '@opentelemetry/api'
       - supports-color
 
   '@chat-adapter/teams@4.26.0':
     dependencies:
       '@chat-adapter/shared': 4.26.0
-      '@microsoft/teams.api': 2.0.7
-      '@microsoft/teams.apps': 2.0.7
-      '@microsoft/teams.cards': 2.0.7
-      '@microsoft/teams.graph-endpoints': 2.0.7
+      '@microsoft/teams.api': 2.0.8
+      '@microsoft/teams.apps': 2.0.8
+      '@microsoft/teams.cards': 2.0.8
+      '@microsoft/teams.graph-endpoints': 2.0.8
       chat: 4.26.0
     transitivePeerDependencies:
       - debug
@@ -3459,12 +3512,24 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@clack/core@1.2.0':
+    dependencies:
+      fast-wrap-ansi: 0.1.6
+      sisteransi: 1.0.5
+
+  '@clack/prompts@1.2.0':
+    dependencies:
+      '@clack/core': 1.2.0
+      fast-string-width: 1.1.0
+      fast-wrap-ansi: 0.1.6
+      sisteransi: 1.0.5
+
   '@discordjs/builders@1.14.1':
     dependencies:
       '@discordjs/formatters': 0.6.2
       '@discordjs/util': 1.2.0
       '@sapphire/shapeshift': 4.0.0
-      discord-api-types: 0.38.46
+      discord-api-types: 0.38.47
       fast-deep-equal: 3.1.3
       ts-mixer: 6.0.4
       tslib: 2.8.1
@@ -3475,7 +3540,7 @@ snapshots:
 
   '@discordjs/formatters@0.6.2':
     dependencies:
-      discord-api-types: 0.38.46
+      discord-api-types: 0.38.47
 
   '@discordjs/rest@2.6.1':
     dependencies:
@@ -3484,14 +3549,14 @@ snapshots:
       '@sapphire/async-queue': 1.5.5
       '@sapphire/snowflake': 3.5.5
       '@vladfrangu/async_event_emitter': 2.4.7
-      discord-api-types: 0.38.46
+      discord-api-types: 0.38.47
       magic-bytes.js: 1.13.0
       tslib: 2.8.1
       undici: 6.24.1
 
   '@discordjs/util@1.2.0':
     dependencies:
-      discord-api-types: 0.38.46
+      discord-api-types: 0.38.47
 
   '@discordjs/ws@1.2.3':
     dependencies:
@@ -3501,7 +3566,7 @@ snapshots:
       '@sapphire/async-queue': 1.5.5
       '@types/ws': 8.18.1
       '@vladfrangu/async_event_emitter': 2.4.7
-      discord-api-types: 0.38.46
+      discord-api-types: 0.38.47
       tslib: 2.8.1
       ws: 8.20.0
     transitivePeerDependencies:
@@ -3795,24 +3860,24 @@ snapshots:
     transitivePeerDependencies:
       - graphql
 
-  '@matrix-org/matrix-sdk-crypto-wasm@18.0.0': {}
+  '@matrix-org/matrix-sdk-crypto-wasm@18.1.0': {}
 
-  '@microsoft/teams.api@2.0.7':
+  '@microsoft/teams.api@2.0.8':
     dependencies:
-      '@microsoft/teams.cards': 2.0.7
-      '@microsoft/teams.common': 2.0.7
+      '@microsoft/teams.cards': 2.0.8
+      '@microsoft/teams.common': 2.0.8
       jwt-decode: 4.0.0
       qs: 6.15.1
     transitivePeerDependencies:
       - debug
 
-  '@microsoft/teams.apps@2.0.7':
+  '@microsoft/teams.apps@2.0.8':
     dependencies:
       '@azure/msal-node': 3.8.10
-      '@microsoft/teams.api': 2.0.7
-      '@microsoft/teams.common': 2.0.7
-      '@microsoft/teams.graph': 2.0.7
-      axios: 1.15.0
+      '@microsoft/teams.api': 2.0.8
+      '@microsoft/teams.common': 2.0.8
+      '@microsoft/teams.graph': 2.0.8
+      axios: 1.15.2
       cors: 2.8.6
       express: 5.2.1
       jsonwebtoken: 9.0.3
@@ -3822,24 +3887,24 @@ snapshots:
       - debug
       - supports-color
 
-  '@microsoft/teams.cards@2.0.7': {}
+  '@microsoft/teams.cards@2.0.8': {}
 
-  '@microsoft/teams.common@2.0.7':
+  '@microsoft/teams.common@2.0.8':
     dependencies:
-      axios: 1.15.0
+      axios: 1.15.2
     transitivePeerDependencies:
       - debug
 
-  '@microsoft/teams.graph-endpoints@2.0.7': {}
+  '@microsoft/teams.graph-endpoints@2.0.8': {}
 
-  '@microsoft/teams.graph@2.0.7':
+  '@microsoft/teams.graph@2.0.8':
     dependencies:
-      '@microsoft/teams.common': 2.0.7
+      '@microsoft/teams.common': 2.0.8
       qs: 6.15.1
     transitivePeerDependencies:
       - debug
 
-  '@napi-rs/wasm-runtime@1.1.3(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)':
+  '@napi-rs/wasm-runtime@1.1.4(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)':
     dependencies:
       '@emnapi/core': 1.9.2
       '@emnapi/runtime': 1.9.2
@@ -3958,7 +4023,7 @@ snapshots:
 
   '@photon-ai/advanced-imessage-kit@1.14.3(typescript@5.9.3)':
     dependencies:
-      axios: 1.15.0
+      axios: 1.15.2
       consola: 3.4.2
       form-data: 4.0.5
       reflect-metadata: 0.2.2
@@ -4110,7 +4175,7 @@ snapshots:
     dependencies:
       '@react-email/text': 0.1.6(react@19.2.5)
       react: 19.2.5
-      tailwindcss: 4.2.2
+      tailwindcss: 4.2.4
     optionalDependencies:
       '@react-email/body': 0.2.1(react@19.2.5)
       '@react-email/button': 0.2.1(react@19.2.5)
@@ -4127,25 +4192,25 @@ snapshots:
     dependencies:
       react: 19.2.5
 
-  '@redis/bloom@5.11.0(@redis/client@5.11.0)':
+  '@redis/bloom@5.12.1(@redis/client@5.12.1)':
     dependencies:
-      '@redis/client': 5.11.0
+      '@redis/client': 5.12.1
 
-  '@redis/client@5.11.0':
+  '@redis/client@5.12.1':
     dependencies:
       cluster-key-slot: 1.1.2
 
-  '@redis/json@5.11.0(@redis/client@5.11.0)':
+  '@redis/json@5.12.1(@redis/client@5.12.1)':
     dependencies:
-      '@redis/client': 5.11.0
+      '@redis/client': 5.12.1
 
-  '@redis/search@5.11.0(@redis/client@5.11.0)':
+  '@redis/search@5.12.1(@redis/client@5.12.1)':
     dependencies:
-      '@redis/client': 5.11.0
+      '@redis/client': 5.12.1
 
-  '@redis/time-series@5.11.0(@redis/client@5.11.0)':
+  '@redis/time-series@5.12.1(@redis/client@5.12.1)':
     dependencies:
-      '@redis/client': 5.11.0
+      '@redis/client': 5.12.1
 
   '@resend/chat-sdk-adapter@0.1.1(@chat-adapter/shared@4.26.0)(chat@4.26.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
     dependencies:
@@ -4200,7 +4265,7 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.9.2
       '@emnapi/runtime': 1.9.2
-      '@napi-rs/wasm-runtime': 1.1.3(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
+      '@napi-rs/wasm-runtime': 1.1.4(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
     optional: true
 
   '@rolldown/binding-win32-arm64-msvc@1.0.0-rc.15':
@@ -4239,7 +4304,7 @@ snapshots:
       '@slack/types': 2.20.1
       '@types/node': 22.19.17
       '@types/retry': 0.12.0
-      axios: 1.15.0
+      axios: 1.15.2
       eventemitter3: 5.0.4
       form-data: 4.0.5
       is-electron: 2.2.2
@@ -4256,11 +4321,11 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@thi.ng/bitstream@2.4.45':
+  '@thi.ng/bitstream@2.4.46':
     dependencies:
-      '@thi.ng/errors': 2.6.7
+      '@thi.ng/errors': 2.6.8
 
-  '@thi.ng/errors@2.6.7': {}
+  '@thi.ng/errors@2.6.8': {}
 
   '@tokenizer/token@0.3.0': {}
 
@@ -4488,14 +4553,14 @@ snapshots:
       '@whiskeysockets/eslint-config': https://codeload.github.com/whiskeysockets/eslint-config/tar.gz/299e8389baf62f9aa3034de18ff0d62cc0a5e838(eslint@9.39.4)(typescript@5.9.3)
       async-lock: 1.4.1
       audio-decode: 2.2.3
-      axios: 1.15.0
+      axios: 1.15.2
       cache-manager: 5.7.6
       libphonenumber-js: 1.12.41
       libsignal: '@whiskeysockets/libsignal-node@https://codeload.github.com/WhiskeySockets/libsignal-node/tar.gz/1c30d7d7e76a3b0aa120b04dc6a26f5a12dccf67'
       lodash: 4.18.1
       music-metadata: 7.14.0
       pino: 9.14.0
-      protobufjs: 7.5.4
+      protobufjs: 7.5.5
       uuid: 10.0.0
       ws: 8.20.0
     transitivePeerDependencies:
@@ -4580,7 +4645,7 @@ snapshots:
 
   audio-type@2.4.1: {}
 
-  axios@1.15.0:
+  axios@1.15.2:
     dependencies:
       follow-redirects: 1.16.0
       form-data: 4.0.5
@@ -4844,11 +4909,11 @@ snapshots:
 
   discord-api-types@0.37.120: {}
 
-  discord-api-types@0.38.46: {}
+  discord-api-types@0.38.47: {}
 
   discord-interactions@4.4.0: {}
 
-  discord.js@14.26.2:
+  discord.js@14.26.3:
     dependencies:
       '@discordjs/builders': 1.14.1
       '@discordjs/collection': 1.5.3
@@ -4857,7 +4922,7 @@ snapshots:
       '@discordjs/util': 1.2.0
       '@discordjs/ws': 1.2.3
       '@sapphire/snowflake': 3.5.3
-      discord-api-types: 0.38.46
+      discord-api-types: 0.38.47
       fast-deep-equal: 3.1.3
       lodash.snakecase: 4.1.1
       magic-bytes.js: 1.13.0
@@ -4936,7 +5001,7 @@ snapshots:
       es-errors: 1.3.0
       get-intrinsic: 1.3.0
       has-tostringtag: 1.0.2
-      hasown: 2.0.2
+      hasown: 2.0.3
 
   esbuild@0.27.7:
     optionalDependencies:
@@ -5112,6 +5177,16 @@ snapshots:
 
   fast-sha256@1.3.0: {}
 
+  fast-string-truncated-width@1.2.1: {}
+
+  fast-string-width@1.1.0:
+    dependencies:
+      fast-string-truncated-width: 1.2.1
+
+  fast-wrap-ansi@0.1.6:
+    dependencies:
+      fast-string-width: 1.1.0
+
   fdir@6.5.0(picomatch@4.0.4):
     optionalDependencies:
       picomatch: 4.0.4
@@ -5168,7 +5243,7 @@ snapshots:
       asynckit: 0.4.0
       combined-stream: 1.0.8
       es-set-tostringtag: 2.1.0
-      hasown: 2.0.2
+      hasown: 2.0.3
       mime-types: 2.1.35
 
   formdata-polyfill@4.0.10:
@@ -5214,7 +5289,7 @@ snapshots:
       get-proto: 1.0.1
       gopd: 1.2.0
       has-symbols: 1.1.0
-      hasown: 2.0.2
+      hasown: 2.0.3
       math-intrinsics: 1.1.0
 
   get-proto@1.0.1:
@@ -5275,7 +5350,7 @@ snapshots:
     dependencies:
       hookified: 1.15.1
 
-  hasown@2.0.2:
+  hasown@2.0.3:
     dependencies:
       function-bind: 1.1.2
 
@@ -5442,6 +5517,8 @@ snapshots:
     dependencies:
       '@keyv/serialize': 1.1.1
 
+  kleur@4.1.5: {}
+
   leac@0.6.0: {}
 
   levn@0.4.1:
@@ -5570,7 +5647,7 @@ snapshots:
   matrix-js-sdk@41.3.0:
     dependencies:
       '@babel/runtime': 7.29.2
-      '@matrix-org/matrix-sdk-crypto-wasm': 18.0.0
+      '@matrix-org/matrix-sdk-crypto-wasm': 18.1.0
       another-json: 0.2.0
       bs58: 6.0.0
       content-type: 1.0.5
@@ -6106,7 +6183,7 @@ snapshots:
 
   postal-mime@2.7.3: {}
 
-  postcss@8.5.9:
+  postcss@8.5.10:
     dependencies:
       nanoid: 3.3.11
       picocolors: 1.1.1
@@ -6157,7 +6234,7 @@ snapshots:
       '@types/node': 10.17.60
       long: 4.0.0
 
-  protobufjs@7.5.4:
+  protobufjs@7.5.5:
     dependencies:
       '@protobufjs/aspromise': 1.1.2
       '@protobufjs/base64': 1.1.2
@@ -6192,7 +6269,7 @@ snapshots:
 
   qoa-format@1.0.1:
     dependencies:
-      '@thi.ng/bitstream': 2.4.45
+      '@thi.ng/bitstream': 2.4.46
 
   qrcode@1.5.4:
     dependencies:
@@ -6249,15 +6326,16 @@ snapshots:
 
   real-require@0.2.0: {}
 
-  redis@5.11.0:
+  redis@5.12.1:
     dependencies:
-      '@redis/bloom': 5.11.0(@redis/client@5.11.0)
-      '@redis/client': 5.11.0
-      '@redis/json': 5.11.0(@redis/client@5.11.0)
-      '@redis/search': 5.11.0(@redis/client@5.11.0)
-      '@redis/time-series': 5.11.0(@redis/client@5.11.0)
+      '@redis/bloom': 5.12.1(@redis/client@5.12.1)
+      '@redis/client': 5.12.1
+      '@redis/json': 5.12.1(@redis/client@5.12.1)
+      '@redis/search': 5.12.1(@redis/client@5.12.1)
+      '@redis/time-series': 5.12.1(@redis/client@5.12.1)
     transitivePeerDependencies:
       - '@node-rs/xxhash'
+      - '@opentelemetry/api'
 
   reflect-metadata@0.2.2: {}
 
@@ -6459,6 +6537,8 @@ snapshots:
 
   simple-yenc@1.0.4: {}
 
+  sisteransi@1.0.5: {}
+
   socket.io-client@4.8.3:
     dependencies:
       '@socket.io/component-emitter': 3.1.2
@@ -6535,7 +6615,7 @@ snapshots:
       standardwebhooks: 1.0.0
       uuid: 10.0.0
 
-  tailwindcss@4.2.2: {}
+  tailwindcss@4.2.4: {}
 
   tar-fs@2.1.4:
     dependencies:
@@ -6697,7 +6777,7 @@ snapshots:
     dependencies:
       lightningcss: 1.32.0
       picomatch: 4.0.4
-      postcss: 8.5.9
+      postcss: 8.5.10
       rolldown: 1.0.0-rc.15
       tinyglobby: 0.2.16
     optionalDependencies:

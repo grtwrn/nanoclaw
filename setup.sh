@@ -6,9 +6,17 @@ set -euo pipefail
 # This is the only bash script in the setup flow.
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LOG_FILE="$PROJECT_ROOT/logs/setup.log"
 
-mkdir -p "$PROJECT_ROOT/logs"
+# Where verbose bootstrap logs go. nanoclaw.sh captures setup.sh's stdout to
+# the per-step raw log, but legacy code in this script + install-node.sh
+# also calls `log` which writes to a file. Route those to the raw log so
+# they don't contaminate the progression log (logs/setup.log).
+# Default: write to the raw bootstrap log if nanoclaw.sh pointed us there,
+# else fall back to a dedicated bootstrap log (keeps standalone `bash
+# setup.sh` invocations working).
+LOG_FILE="${NANOCLAW_BOOTSTRAP_LOG:-${PROJECT_ROOT}/logs/bootstrap.log}"
+
+mkdir -p "$(dirname "$LOG_FILE")"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] [bootstrap] $*" >> "$LOG_FILE"; }
 
@@ -72,9 +80,25 @@ install_deps() {
 
   cd "$PROJECT_ROOT"
 
-  # Enable corepack for pnpm
+  # Corepack's first-use "Do you want to continue? [Y/n]" prompt would hang
+  # the script since we redirect stdout/stderr to the log file — the prompt
+  # is invisible but corepack still blocks on stdin. Auto-accept.
+  export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+
+  # Enable corepack so `pnpm` shim lands on PATH.
   log "Enabling corepack"
   corepack enable >> "$LOG_FILE" 2>&1 || true
+
+  # On Linux/WSL with system-wide Node (e.g. apt-installed to /usr/bin),
+  # corepack needs root to symlink /usr/bin/pnpm. Retry with sudo when pnpm
+  # isn't on PATH. macOS Homebrew installs land in a user-writable prefix,
+  # and a sudo retry there would create root-owned shims inside /opt/homebrew
+  # that later break brew — so the retry is Linux-only.
+  if ! command -v pnpm >/dev/null 2>&1 && [ "$PLATFORM" = "linux" ] \
+      && command -v sudo >/dev/null 2>&1; then
+    log "pnpm not on PATH after corepack enable — retrying with sudo"
+    sudo corepack enable >> "$LOG_FILE" 2>&1 || true
+  fi
 
   log "Running pnpm install --frozen-lockfile"
   if pnpm install --frozen-lockfile >> "$LOG_FILE" 2>&1; then
@@ -120,6 +144,16 @@ log "=== Bootstrap started ==="
 detect_platform
 
 check_node
+if [ "$NODE_OK" = "false" ]; then
+  log "Node missing or too old — running setup/install-node.sh"
+  echo "Node not found — installing via setup/install-node.sh"
+  if bash "$PROJECT_ROOT/setup/install-node.sh" 2>&1 | tee -a "$LOG_FILE"; then
+    hash -r 2>/dev/null || true
+    check_node
+  else
+    log "install-node.sh failed"
+  fi
+fi
 install_deps
 check_build_tools
 
