@@ -20,6 +20,7 @@ import {
 import { isValidGroupFolder } from '../src/group-folder.js';
 import { initGroupFilesystem } from '../src/group-init.js';
 import { log } from '../src/log.js';
+import { namespacedPlatformId } from '../src/platform-id.js';
 import { resolveSession, writeSessionMessage } from '../src/session-manager.js';
 import { emitStatus } from './status.js';
 
@@ -112,16 +113,10 @@ export async function run(args: string[]): Promise<void> {
     process.exit(4);
   }
 
-  // Chat SDK adapters prefix platform IDs with the channel type
-  // (e.g. "telegram:123", "discord:guild:channel"). Native-JID adapters
-  // (WhatsApp <phone>@s.whatsapp.net, iMessage email@…) embed '@' and
-  // store platform_id unprefixed. Matches scripts/init-first-agent.ts's
-  // namespacedPlatformId — diverging here silently breaks the router,
-  // which looks up messaging_groups by the raw event.platformId from
-  // the adapter.
-  if (!parsed.platformId.startsWith(`${parsed.channel}:`) && !parsed.platformId.includes('@')) {
-    parsed.platformId = `${parsed.channel}:${parsed.platformId}`;
-  }
+  // Normalize platform_id to the same shape the adapter will emit at runtime,
+  // so the router's (channel_type, platform_id) lookup matches what we store.
+  // Chat SDK adapters prefix, native adapters (WhatsApp/iMessage/Signal) don't.
+  parsed.platformId = namespacedPlatformId(parsed.channel, parsed.platformId);
 
   log.info('Registering channel', parsed);
 

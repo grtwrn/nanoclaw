@@ -183,19 +183,6 @@ docker ps -q --filter 'name=nanoclaw-v2-' | xargs -r docker kill
 >
 > First call takes 2–3s while the MCP server starts and OneCLI does the token exchange.
 
-### Dry-run the server to confirm installation
-
-```bash
-docker run --rm \
-  -v ~/.calendar-mcp:/workspace/extra/.calendar-mcp \
-  -e GOOGLE_OAUTH_CREDENTIALS=/workspace/extra/.calendar-mcp/gcp-oauth.keys.json \
-  -e GOOGLE_CALENDAR_MCP_TOKEN_PATH=/workspace/extra/.calendar-mcp/credentials.json \
-  --entrypoint sh nanoclaw-agent-v2-b8d319e7:latest \
-  -c 'echo "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"t\",\"version\":\"1\"}}}" | timeout 5 google-calendar-mcp 2>&1 | head -3'
-```
-
-Expected: one line of JSON with `"serverInfo": { "name": "google-calendar-mcp", ... }`.
-
 ### Check logs if the tool isn't working
 
 ```bash
