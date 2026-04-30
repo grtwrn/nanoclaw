@@ -325,9 +325,7 @@ registerChannelAdapter('whatsapp', {
           return { ...p, id: translated };
         }),
       );
-      const participants = resolved.filter(
-        (p): p is NonNullable<typeof p> => p !== null,
-      );
+      const participants = resolved.filter((p): p is NonNullable<typeof p> => p !== null);
       const normalized = { ...metadata, participants };
       groupMetadataCache.set(jid, {
         metadata: normalized,
