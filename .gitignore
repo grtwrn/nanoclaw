@@ -8,8 +8,13 @@ dist/
 
 # Local data & auth
 store/
+store.bak.*/
 data/
 logs/
+
+# Headless browser tool runtime dirs
+.browserbase/
+.hyperbrowser/
 
 # Groups - per-installation state, not tracked
 groups/*

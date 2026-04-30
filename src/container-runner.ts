@@ -408,6 +408,11 @@ async function buildContainerArgs(
   // Everything NanoClaw-specific is in container.json (read by runner at startup).
   args.push('-e', `TZ=${TIMEZONE}`);
 
+  // Placeholder for flyctl: it refuses to make API calls without FLY_API_TOKEN
+  // set, but the OneCLI proxy handles real auth substitution per host pattern.
+  // Agents without Fly secrets are unaffected — placeholder passes through.
+  args.push('-e', 'FLY_API_TOKEN=onecli-managed');
+
   // Provider-contributed env vars (e.g. XDG_DATA_HOME, OPENCODE_*, NO_PROXY).
   if (providerContribution.env) {
     for (const [key, value] of Object.entries(providerContribution.env)) {

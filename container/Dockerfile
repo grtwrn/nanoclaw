@@ -10,7 +10,7 @@
 # bind mount at runtime (see src/container-runner.ts). Source-only changes
 # never require an image rebuild.
 
-FROM node:22-slim
+FROM node:22-trixie-slim
 
 # ---- Build-time arguments ----------------------------------------------------
 # CJK fonts add ~200MB. Opt in only if you render Chinese/Japanese/Korean text.
@@ -23,6 +23,9 @@ ARG CLAUDE_CODE_VERSION=2.1.116
 ARG AGENT_BROWSER_VERSION=latest
 ARG VERCEL_VERSION=latest
 ARG BUN_VERSION=1.3.12
+ARG GMAIL_MCP_VERSION=1.1.11
+ARG CALENDAR_MCP_VERSION=2.6.1
+ARG FLYCTL_VERSION=0.4.40
 
 # ---- System dependencies -----------------------------------------------------
 # tini: correct PID 1 / signal forwarding so outbound.db writes finalize on
@@ -41,13 +44,14 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         libxcomposite1 \
         libxdamage1 \
         libxrandr2 \
-        libasound2 \
+        libasound2t64 \
         libpangocairo-1.0-0 \
         libcups2 \
         libdrm2 \
         libxshmfence1 \
         ca-certificates \
         curl \
+        ffmpeg \
         git \
         tini \
         unzip \
@@ -103,6 +107,26 @@ RUN --mount=type=cache,target=/root/.cache/pnpm \
 
 RUN --mount=type=cache,target=/root/.cache/pnpm \
     pnpm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+
+RUN --mount=type=cache,target=/root/.cache/pnpm \
+    pnpm install -g \
+        "@gongrzhe/server-gmail-autoauth-mcp@${GMAIL_MCP_VERSION}" \
+        "@cocal/google-calendar-mcp@${CALENDAR_MCP_VERSION}" \
+        "zod-to-json-schema@3.22.5"
+
+# ---- flyctl (Fly.io CLI) -----------------------------------------------------
+# Single static Go binary — pulled directly from GitHub releases. Auth is
+# provided per-agent via mounting ~/.fly (see groups/yale-shuttle-dev/container.json).
+RUN ARCH=$(dpkg --print-architecture) && \
+    case "$ARCH" in \
+      arm64) FLYCTL_ARCH=Linux_arm64 ;; \
+      amd64) FLYCTL_ARCH=Linux_x86_64 ;; \
+      *) echo "Unsupported arch for flyctl: $ARCH" && exit 1 ;; \
+    esac && \
+    curl -fsSL "https://github.com/superfly/flyctl/releases/download/v${FLYCTL_VERSION}/flyctl_${FLYCTL_VERSION}_${FLYCTL_ARCH}.tar.gz" \
+      | tar -xz -C /usr/local/bin flyctl && \
+    chmod +x /usr/local/bin/flyctl && \
+    ln -sf /usr/local/bin/flyctl /usr/local/bin/fly
 
 # ---- Entrypoint --------------------------------------------------------------
 COPY entrypoint.sh /app/entrypoint.sh

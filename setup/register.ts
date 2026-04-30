@@ -113,9 +113,13 @@ export async function run(args: string[]): Promise<void> {
   }
 
   // Chat SDK adapters prefix platform IDs with the channel type
-  // (e.g. "telegram:123", "discord:guild:channel"). Normalize here so
-  // the stored ID always matches what the adapter sends at runtime.
-  if (!parsed.platformId.startsWith(`${parsed.channel}:`)) {
+  // (e.g. "telegram:123", "discord:guild:channel"). Native-JID adapters
+  // (WhatsApp <phone>@s.whatsapp.net, iMessage email@…) embed '@' and
+  // store platform_id unprefixed. Matches scripts/init-first-agent.ts's
+  // namespacedPlatformId — diverging here silently breaks the router,
+  // which looks up messaging_groups by the raw event.platformId from
+  // the adapter.
+  if (!parsed.platformId.startsWith(`${parsed.channel}:`) && !parsed.platformId.includes('@')) {
     parsed.platformId = `${parsed.channel}:${parsed.platformId}`;
   }
 
@@ -167,19 +171,22 @@ export async function run(args: string[]): Promise<void> {
   if (!existing) {
     newlyWired = true;
     const mgaId = generateId('mga');
-    const triggerRules = parsed.trigger
-      ? JSON.stringify({
-          pattern: parsed.trigger,
-          requiresTrigger: parsed.requiresTrigger,
-        })
-      : null;
+    // Mirrors scripts/init-first-agent.ts:wireIfMissing so both setup paths
+    // create rows with the same shape. Groups default to 'mention' (bot only
+    // responds when addressed); DMs default to 'pattern'/'.' (respond to
+    // every message). An explicit --trigger overrides the pattern regex.
+    const isGroup = messagingGroup.is_group === 1;
+    const engageMode: 'pattern' | 'mention' = isGroup && !parsed.trigger ? 'mention' : 'pattern';
+    const engagePattern: string | null = engageMode === 'pattern' ? parsed.trigger || '.' : null;
     createMessagingGroupAgent({
       id: mgaId,
       messaging_group_id: messagingGroup.id,
       agent_group_id: agentGroup.id,
-      trigger_rules: triggerRules,
-      response_scope: 'all',
-      session_mode: parsed.sessionMode,
+      engage_mode: engageMode,
+      engage_pattern: engagePattern,
+      sender_scope: 'all',
+      ignored_message_policy: 'drop',
+      session_mode: parsed.sessionMode as 'shared' | 'per-thread' | 'agent-shared',
       priority: 0,
       created_at: new Date().toISOString(),
     });
