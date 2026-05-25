@@ -2,6 +2,7 @@
 
 ## Staples
 - Eggs
+- Aluminum foil
 - Almond milk
 - Salt
 - Nuts
@@ -15,43 +16,37 @@
 
 ## This Week
 
-## 炸酱面 Zhajiangmian
-- Pork belly (1 lb, skin-on)
-- Fresh or dried wheat noodles (8 oz dried or 1 lb fresh)
-- Sweet bean sauce / tianmianjiang (甜面酱)
-- Ground bean sauce (黄豆酱)
-- Cucumber (julienned)
-- Carrot (julienned)
-- Scallions
-- Ginger
-- Star anise *(pantry)*
-- Bay leaves *(pantry)*
-- Cinnamon stick *(pantry)*
-- Sichuan peppercorns *(pantry)*
-- Shaoxing wine *(pantry)*
-- Dark soy sauce *(pantry)*
-
-## Crispy Halloumi with Tomatoes and White Beans
-- 1 (8-oz) block halloumi
-- 1 lb cherry tomatoes
-- 1–2 (15-oz) cans white beans (cannellini, butter, or navy), drained
-- Fresh parsley
-- Honey *(pantry)*
-- Dried oregano *(pantry)*
-- Garlic *(pantry)*
-- Olive oil *(pantry)*
-- Lemon *(pantry)*
-
 ## Porcini Ragù (Ixta Belfrage / NYT)
 - 1½ oz dried porcini mushrooms
 - 9 oz dried tagliatelle
-- 1½ oz Parmesan
+- 1½ oz Parmesan *(in store)*
 - 3 tbsp heavy cream
 - Fresh parsley
 - Garlic *(pantry)*
 - Crushed red pepper *(pantry)*
-- Tomato paste *(pantry)*
+- Tomato paste *(in store)*
 - Olive oil *(pantry)*
+
+## Miso Glazed Salmon (Just One Cookbook)
+- Salmon fillets (~¾ lb, 2 pieces, skin-on)
+- Sake (1 Tbsp)
+- Mirin (1 Tbsp)
+- Scallions
+- Miso *(staples)*
+- Soy sauce *(pantry)*
+- Sesame oil *(pantry)*
+
+## Smashed Beef Kebab with Lebna
+- Ground beef, 80% lean (1 lb)
+- Lebna *(in store)*
+- Mini cucumbers (2)
+- Fresh mint
+- Yellow onion (1 small)
+- Walnuts (¼ cup)
+- Raisins or dried fruit (2 tbsp)
+- Flatbreads
+- Turmeric *(staples)*
+- Garlic *(pantry)*
 
 ---
 
