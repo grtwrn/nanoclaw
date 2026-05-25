@@ -11,6 +11,7 @@
  * so even if this table is stale the host's enforcement is authoritative.
  */
 import { getInboundDb } from './db/connection.js';
+import { getSessionRouting } from './db/session-routing.js';
 
 export interface DestinationEntry {
   name: string;
@@ -117,13 +118,22 @@ function buildDestinationsSection(): string {
     ].join('\n');
   }
 
+  const routing = getSessionRouting();
+  const current = findByRouting(routing.channel_type, routing.platform_id);
+
   const lines = ['## Sending messages', '', 'You can send messages to the following destinations:', ''];
   for (const d of all) {
     const label = d.displayName && d.displayName !== d.name ? ` (${d.displayName})` : '';
-    lines.push(`- \`${d.name}\`${label}`);
+    const marker = current && d.name === current.name ? ' — **current conversation**' : '';
+    lines.push(`- \`${d.name}\`${label}${marker}`);
   }
   lines.push('');
   lines.push('To send a message, wrap it in a `<message to="name">...</message>` block.');
+  if (current) {
+    lines.push(
+      `Replies to the user belong in \`${current.name}\` — that is the chat the inbound message arrived on. Only send to other destinations when the task explicitly calls for it (e.g. delegating to another agent, posting an update to a different channel).`,
+    );
+  }
   lines.push('You can include multiple `<message>` blocks in one response to send to multiple destinations.');
   lines.push('Text outside of `<message>` blocks is scratchpad — logged but not sent anywhere.');
   lines.push('Use `<internal>...</internal>` to make scratchpad intent explicit.');

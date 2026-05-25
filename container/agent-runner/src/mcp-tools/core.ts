@@ -221,12 +221,13 @@ export const editMessage: McpToolDefinition = {
 export const addReaction: McpToolDefinition = {
   tool: {
     name: 'add_reaction',
-    description: 'Add an emoji reaction to a message.',
+    description:
+      'Add an emoji reaction to an inbound message. On chat channels where a human is waiting, this is the ack contract: call with emoji="eyes" BEFORE starting any slow work (tool calls, searches, file reads, browsing) so the user knows the message was received, then "white_check_mark" when the work completes. Skip for instant single-line replies (the reply is its own ack), agent-to-agent channels, and silent scheduled-task wakes. Free shortcodes (thumbs_up, heart, fire, tada, thinking_face, pray, etc.) are encouraged when one fits naturally.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         messageId: { type: 'integer', description: 'Message ID (the numeric id shown in messages)' },
-        emoji: { type: 'string', description: 'Emoji name (e.g., thumbs_up, heart, check)' },
+        emoji: { type: 'string', description: 'Emoji shortcode name (e.g., eyes, white_check_mark, thumbs_up, heart). Not a raw unicode character.' },
       },
       required: ['messageId', 'emoji'],
     },
