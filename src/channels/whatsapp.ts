@@ -32,6 +32,7 @@ import {
 } from '@whiskeysockets/baileys';
 import type { GroupMetadata, WAMessageKey, WAMessage, WASocket } from '@whiskeysockets/baileys';
 
+import { isSafeAttachmentName } from '../attachment-safety.js';
 import { ASSISTANT_HAS_OWN_NUMBER, ASSISTANT_NAME } from '../config.js';
 import { readEnvFile } from '../env.js';
 import { log } from '../log.js';
@@ -195,6 +196,64 @@ const DOCUMENT_MIMETYPES: Record<string, string> = {
   '.zip': 'application/zip',
 };
 
+/**
+ * Subset of a normalized Baileys message content carrying the message
+ * types that can host a `contextInfo.mentionedJid` array. Kept as a
+ * structural type so the helper (and its tests) don't pull in the full
+ * `proto.IMessage` shape just to construct fixtures.
+ */
+type MentionContextSource = {
+  extendedTextMessage?: { contextInfo?: { mentionedJid?: string[] | null } | null } | null;
+  imageMessage?: { contextInfo?: { mentionedJid?: string[] | null } | null } | null;
+  videoMessage?: { contextInfo?: { mentionedJid?: string[] | null } | null } | null;
+  documentMessage?: { contextInfo?: { mentionedJid?: string[] | null } | null } | null;
+};
+
+/**
+ * Detect an explicit @-mention of the bot in a WhatsApp group message.
+ * WhatsApp carries mentions in `contextInfo.mentionedJid` on the text +
+ * caption-bearing message types. Matches against both the bot's phone
+ * JID and LID — most modern clients emit the LID even when the human
+ * typed a phone-number mention.
+ *
+ * Exported for unit testing. The inbound construction site calls this
+ * to set `InboundMessage.isMention` for group messages (#2560). DMs are
+ * unconditionally mentions and don't go through this helper.
+ */
+export function isBotMentionedInGroup(
+  normalized: MentionContextSource,
+  botPhoneJid: string | undefined,
+  botLidUser: string | undefined,
+): boolean {
+  if (!botPhoneJid && !botLidUser) return false;
+  const mentionedJids: string[] = [
+    ...(normalized.extendedTextMessage?.contextInfo?.mentionedJid ?? []),
+    ...(normalized.imageMessage?.contextInfo?.mentionedJid ?? []),
+    ...(normalized.videoMessage?.contextInfo?.mentionedJid ?? []),
+    ...(normalized.documentMessage?.contextInfo?.mentionedJid ?? []),
+  ];
+  const botLidJid = botLidUser ? `${botLidUser}@lid` : undefined;
+  return mentionedJids.some((jid) => {
+    if (!jid) return false;
+    const bare = jid.split(':')[0];
+    return bare === botPhoneJid || bare === botLidJid;
+  });
+}
+
+/**
+ * Compute `InboundMessage.isMention` for a WhatsApp message:
+ *   - DMs are always mentions (router auto-engages on the bot's behalf).
+ *   - Group messages are mentions only when the bot is explicitly tagged.
+ *
+ * Returns `true | undefined` rather than `true | false` because the
+ * `InboundMessage` field is `isMention?: boolean` and downstream code
+ * treats `undefined` differently than an explicit `false` (#2560).
+ */
+export function computeIsMention(isGroup: boolean, botMentionedInGroup: boolean): true | undefined {
+  if (!isGroup) return true;
+  return botMentionedInGroup ? true : undefined;
+}
+
 /** Map file extension to Baileys media message type. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildMediaMessage(data: Buffer, filename: string, ext: string, caption?: string): any {
@@ -238,6 +297,7 @@ registerChannelAdapter('whatsapp', {
     // LID → phone JID mapping (WhatsApp's new ID system)
     const lidToPhoneMap: Record<string, string> = {};
     let botLidUser: string | undefined;
+    let botPhoneJid: string | undefined;
 
     // Outgoing queue for messages sent while disconnected
     const outgoingQueue: Array<{ jid: string; text: string }> = [];
@@ -393,8 +453,19 @@ registerChannelAdapter('whatsapp', {
         if (!normalized[key]) continue;
         try {
           const buffer = await downloadMediaMessage(msg, 'buffer', {});
-          const docFilename = normalized[key].fileName;
-          const filename = docFilename || `${type}-${Date.now()}${ext}`;
+          // documentMessage.fileName is attacker-controlled and rides through
+          // WhatsApp's E2E channel — Meta can't sanitize it server-side. The
+          // name flows downstream into path.join sinks, so a `..`-laden value
+          // would escape the attachments dir on the host. Reject and fall back.
+          const rawFilename = normalized[key].fileName;
+          const fallback = `${type}-${Date.now()}${ext}`;
+          const filename = isSafeAttachmentName(rawFilename) ? rawFilename : fallback;
+          if (rawFilename && filename !== rawFilename) {
+            log.warn('Refused unsafe attachment filename — would escape attachments dir', {
+              rawFilename,
+              replacement: filename,
+            });
+          }
           results.push({ type, name: filename, data: buffer.toString('base64') });
           log.info('Media downloaded', { type, filename, bytes: buffer.length });
         } catch (err) {
@@ -505,6 +576,17 @@ registerChannelAdapter('whatsapp', {
             });
           } else {
             log.info('WhatsApp logged out');
+            // Delete auth credentials immediately. Keeping stale credentials
+            // causes the next service restart to attempt authentication with an
+            // invalidated session, producing a second 401 that can trigger
+            // WhatsApp's re-link cooldown ("can't link new devices now").
+            try {
+              fs.rmSync(authDir, { recursive: true, force: true });
+              fs.mkdirSync(authDir, { recursive: true });
+              log.info('WhatsApp auth cleared — set WHATSAPP_ENABLED=true and restart to re-link');
+            } catch (err) {
+              log.error('Failed to clear WhatsApp auth after logout', { err });
+            }
             if (rejectFirstOpen) {
               rejectFirstOpen(new Error('WhatsApp logged out'));
               rejectFirstOpen = undefined;
@@ -531,8 +613,9 @@ registerChannelAdapter('whatsapp', {
           if (sock.user) {
             const phoneUser = sock.user.id.split(':')[0];
             const lidUser = sock.user.lid?.split(':')[0];
+            botPhoneJid = `${phoneUser}@s.whatsapp.net`;
             if (lidUser && phoneUser) {
-              setLidPhoneMapping(lidUser, `${phoneUser}@s.whatsapp.net`);
+              setLidPhoneMapping(lidUser, botPhoneJid);
               botLidUser = lidUser;
             }
           }
@@ -648,9 +731,18 @@ registerChannelAdapter('whatsapp', {
               }
             }
 
+            // Detect explicit @-mentions of the bot in groups. Detail in
+            // isBotMentionedInGroup(); short version is contextInfo.mentionedJid
+            // on text + caption-bearing messages, matched against the bot's
+            // phone JID and LID (#2560). DMs are always mentions; non-mentioned
+            // group messages leave isMention undefined so the router's
+            // text-match fallback (and the @lid→name rewrite above) still apply.
+            const botMentionedInGroup = isGroup && isBotMentionedInGroup(normalized, botPhoneJid, botLidUser);
+
             const inbound: InboundMessage = {
               id: msg.key.id || `wa-${Date.now()}`,
               kind: 'chat',
+              isMention: computeIsMention(isGroup, botMentionedInGroup),
               content: {
                 text: content,
                 sender,
