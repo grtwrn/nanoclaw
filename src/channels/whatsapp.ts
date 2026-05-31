@@ -33,7 +33,7 @@ import {
 import type { GroupMetadata, WAMessageKey, WAMessage, WASocket } from '@whiskeysockets/baileys';
 
 import { isSafeAttachmentName } from '../attachment-safety.js';
-import { ASSISTANT_HAS_OWN_NUMBER, ASSISTANT_NAME } from '../config.js';
+import { ASSISTANT_HAS_OWN_NUMBER, ASSISTANT_NAME, DEFAULT_TRIGGER } from '../config.js';
 import { readEnvFile } from '../env.js';
 import { log } from '../log.js';
 import { registerChannelAdapter } from './channel-registry.js';
@@ -241,17 +241,39 @@ export function isBotMentionedInGroup(
 }
 
 /**
- * Compute `InboundMessage.isMention` for a WhatsApp message:
- *   - DMs are always mentions (router auto-engages on the bot's behalf).
- *   - Group messages are mentions only when the bot is explicitly tagged.
+ * Compute `InboundMessage.isMention` for a WhatsApp message.
+ *
+ * `isMention` is what makes the router escalate an *unwired* channel to the
+ * owner ("connect this person/channel to your agent") — so it must mean
+ * "the bot was actually addressed", not just "a message arrived".
+ *
+ * Shared-number mode (`ASSISTANT_HAS_OWN_NUMBER` false — the bot is a linked
+ * device on the operator's own number): the bot has no distinct platform
+ * identity. `botPhoneJid` is the *operator's* JID, so a platform-level
+ * @-mention (`mentionedJid`) fires whenever the operator is tagged in any
+ * group, and every cold DM looks "addressed". Both are false positives. The
+ * only reliable signal here is the text trigger (`@claude` / DEFAULT_TRIGGER),
+ * so we require it for both DMs and groups.
+ *
+ * Own-number mode (`ASSISTANT_HAS_OWN_NUMBER` true): the bot is its own
+ * contact, so the historical behavior holds — DMs are always mentions and a
+ * platform @-mention of the bot in a group counts.
+ *
+ * Either mode: an explicit text trigger always counts. Note this only gates
+ * *unwired*-channel escalation and first-engagement; already-wired sessions
+ * engage via their own `engage_pattern`/mention-sticky rules regardless.
  *
  * Returns `true | undefined` rather than `true | false` because the
  * `InboundMessage` field is `isMention?: boolean` and downstream code
  * treats `undefined` differently than an explicit `false` (#2560).
  */
-export function computeIsMention(isGroup: boolean, botMentionedInGroup: boolean): true | undefined {
-  if (!isGroup) return true;
-  return botMentionedInGroup ? true : undefined;
+export function computeIsMention(isGroup: boolean, botMentionedInGroup: boolean, text: string): true | undefined {
+  if (text.toLowerCase().includes(DEFAULT_TRIGGER.toLowerCase())) return true;
+  if (ASSISTANT_HAS_OWN_NUMBER) {
+    if (!isGroup) return true;
+    if (botMentionedInGroup) return true;
+  }
+  return undefined;
 }
 
 /** Map file extension to Baileys media message type. */
@@ -742,7 +764,7 @@ registerChannelAdapter('whatsapp', {
             const inbound: InboundMessage = {
               id: msg.key.id || `wa-${Date.now()}`,
               kind: 'chat',
-              isMention: computeIsMention(isGroup, botMentionedInGroup),
+              isMention: computeIsMention(isGroup, botMentionedInGroup, content),
               content: {
                 text: content,
                 sender,
