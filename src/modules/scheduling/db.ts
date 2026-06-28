@@ -27,8 +27,12 @@ export function insertTask(
   },
 ): void {
   db.prepare(
+    // timestamp must be an explicit UTC ISO string (…T…Z), not SQLite's
+    // offset-less datetime('now'); the container's formatLocalTime would parse
+    // a bare "YYYY-MM-DD HH:MM:SS" as local time and shift the task-wake header
+    // by the zone offset (see src/timezone.ts ensureUtcIso).
     `INSERT INTO messages_in (id, seq, timestamp, status, tries, process_after, recurrence, kind, platform_id, channel_type, thread_id, content, series_id)
-     VALUES (@id, @seq, datetime('now'), 'pending', 0, @processAfter, @recurrence, 'task', @platformId, @channelType, @threadId, @content, @id)`,
+     VALUES (@id, @seq, strftime('%Y-%m-%dT%H:%M:%fZ','now'), 'pending', 0, @processAfter, @recurrence, 'task', @platformId, @channelType, @threadId, @content, @id)`,
   ).run({
     ...task,
     seq: nextEvenSeq(db),
@@ -132,8 +136,10 @@ export function insertRecurrence(
   nextRun: string | null,
 ): void {
   db.prepare(
+    // timestamp as explicit UTC ISO (…T…Z) — see insertTask above for why
+    // datetime('now') is wrong here.
     `INSERT INTO messages_in (id, seq, kind, timestamp, status, process_after, recurrence, platform_id, channel_type, thread_id, content, series_id)
-     VALUES (?, ?, ?, datetime('now'), 'pending', ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'), 'pending', ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     newId,
     nextEvenSeq(db),
@@ -150,4 +156,17 @@ export function insertRecurrence(
 
 export function clearRecurrence(db: Database.Database, messageId: string): void {
   db.prepare('UPDATE messages_in SET recurrence = NULL WHERE id = ?').run(messageId);
+}
+
+/**
+ * True if the series already has a live (pending/paused) row. Used by
+ * handleRecurrence to stay idempotent: a series must run as a single chain, so
+ * we never spawn a second live occurrence while one already exists. This both
+ * prevents new forks and converges any pre-existing fork back to one chain.
+ */
+export function hasLiveSeriesRow(db: Database.Database, seriesId: string): boolean {
+  const row = db
+    .prepare("SELECT 1 FROM messages_in WHERE series_id = ? AND status IN ('pending', 'paused') LIMIT 1")
+    .get(seriesId);
+  return row !== undefined;
 }

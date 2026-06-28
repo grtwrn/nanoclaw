@@ -95,4 +95,64 @@ describe('handleRecurrence', () => {
     const count = (db.prepare(`SELECT COUNT(*) AS c FROM messages_in`).get() as { c: number }).c;
     expect(count).toBe(1);
   });
+
+  // A series must run as ONE chain. Spawning per completed-row let a series fork
+  // into two parallel chains that double-fired forever (duplicate reminders).
+  function seedCompletedRecurring(db: ReturnType<typeof openInboundDb>, id: string, seriesId: string) {
+    insertTask(db, {
+      id,
+      processAfter: '2020-01-01T00:00:00.000Z',
+      recurrence: '*/10 * * * *',
+      platformId: null,
+      channelType: null,
+      threadId: null,
+      content: JSON.stringify({ prompt: 'noop' }),
+    });
+    db.prepare(`UPDATE messages_in SET status='completed', series_id=? WHERE id=?`).run(seriesId, id);
+  }
+
+  it('converges a forked series (two completed chains) back to one live row', async () => {
+    const db = freshDb();
+    seedCompletedRecurring(db, 'task-fork-a', 'series-b');
+    seedCompletedRecurring(db, 'task-fork-b', 'series-b');
+
+    await handleRecurrence(db, fakeSession());
+
+    const live = db.prepare(`SELECT id FROM messages_in WHERE status='pending'`).all();
+    expect(live).toHaveLength(1);
+    // Both originals retired so neither can re-spawn next tick.
+    const stillRecurring = db
+      .prepare(`SELECT id FROM messages_in WHERE status='completed' AND recurrence IS NOT NULL`)
+      .all();
+    expect(stillRecurring).toHaveLength(0);
+    db.close();
+  });
+
+  it('does not spawn when the series already has a live occurrence', async () => {
+    const db = freshDb();
+    seedCompletedRecurring(db, 'task-done', 'series-c');
+    insertTask(db, {
+      id: 'task-live',
+      processAfter: new Date(Date.now() + 600000).toISOString(),
+      recurrence: '*/10 * * * *',
+      platformId: null,
+      channelType: null,
+      threadId: null,
+      content: JSON.stringify({ prompt: 'noop' }),
+    });
+    db.prepare(`UPDATE messages_in SET series_id='series-c' WHERE id='task-live'`).run();
+
+    await handleRecurrence(db, fakeSession());
+
+    const live = db.prepare(`SELECT id FROM messages_in WHERE status='pending'`).all() as {
+      id: string;
+    }[];
+    expect(live).toHaveLength(1);
+    expect(live[0].id).toBe('task-live');
+    const done = db.prepare(`SELECT recurrence FROM messages_in WHERE id='task-done'`).get() as {
+      recurrence: string | null;
+    };
+    expect(done.recurrence).toBeNull();
+    db.close();
+  });
 });
