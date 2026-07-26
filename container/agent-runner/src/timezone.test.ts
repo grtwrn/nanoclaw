@@ -24,6 +24,17 @@ describe('formatLocalTime', () => {
     expect(tokyo).toContain('9:00');
   });
 
+  it('treats an offset-less SQLite datetime() timestamp as UTC, not local', () => {
+    // Regression: scheduled-task rows stamp `timestamp` via SQLite
+    // datetime('now') → "YYYY-MM-DD HH:MM:SS" (UTC value, no Z, space-separated).
+    // new Date() would parse that as *local* time, shifting the task-wake header
+    // by the zone offset and making the agent think it's hours later than it is.
+    // 20:45 UTC must render as 4:45 PM EDT, not 8:45 PM.
+    const result = formatLocalTime('2026-06-22 20:45:00', 'America/New_York');
+    expect(result).toContain('4:45');
+    expect(result).toContain('PM');
+  });
+
   it('does not throw on invalid timezone, falls back to UTC', () => {
     expect(() => formatLocalTime('2026-01-01T00:00:00.000Z', 'IST-2')).not.toThrow();
     const result = formatLocalTime('2026-01-01T12:00:00.000Z', 'IST-2');
