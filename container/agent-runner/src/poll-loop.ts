@@ -503,6 +503,13 @@ export async function processQuery(
         markCompleted(initialBatchIds);
         if (event.text) {
           const { sent, hasUnwrapped, taskBlocks } = dispatchResultText(event.text, routing);
+          // Re-arm the wrapping nudge after any successfully delivered result.
+          // The once-per-query guard exists to avoid hammering an agent that
+          // repeatedly fails the same retry — but chat queries stay open across
+          // many exchanges, so without re-arming, a lapse in exchange N>1 was
+          // silently dropped and the user saw the agent "reply once then go
+          // quiet" for the rest of the session.
+          if (sent > 0) unwrappedNudged = false;
           const willRetryTaskBlocks = shouldNudgeTaskBlocks(routing.taskRun, taskBlocks, taskBlockNudged);
           // One-door task delivery: the final text becomes the run log entry
           // while explicit append-log calls remain optional additive notes.
