@@ -14,15 +14,26 @@ Frequent recurring scheduled tasks — more than a few times a day — consume A
 4. If `wakeAgent: false` — nothing happens, task waits for next run
 5. If `wakeAgent: true` — claude receives the script's data + prompt and handles
 
+### Script safety rules (mandatory)
+
+A hung script or browser can starve this whole session — user messages queue behind it and can be lost when the container is force-killed. Every task script and task prompt must follow these:
+
+1. **Every `fetch` in a script gets a timeout**: `fetch(url, { signal: AbortSignal.timeout(30000) })`. Wrap the whole script body in try/catch and print `{ "wakeAgent": false }` on any error.
+2. **Every `curl` gets `--max-time 30`.**
+3. **Recurring tasks must not depend on agent-browser to make forward progress.** If a task uses agent-browser, prefix every invocation with `timeout 120`, give up after ~10 minutes total, and fall back to messaging the user with what they need to finish manually.
+4. **Mark work processed before acting on it, not after.** If a task detects an item (email, event) and then acts, record the item as processed (dedupe file, mark-as-read) FIRST — otherwise a failing action re-triggers the task forever.
+
 ### Always test your script first
 
 Before scheduling, run the script directly to verify it works:
 
 ```bash
 bash -c 'node --input-type=module -e "
-  const r = await fetch(\"https://api.github.com/repos/owner/repo/pulls?state=open\");
-  const prs = await r.json();
-  console.log(JSON.stringify({ wakeAgent: prs.length > 0, data: prs.slice(0, 5) }));
+  try {
+    const r = await fetch(\"https://api.github.com/repos/owner/repo/pulls?state=open\", { signal: AbortSignal.timeout(30000) });
+    const prs = await r.json();
+    console.log(JSON.stringify({ wakeAgent: prs.length > 0, data: prs.slice(0, 5) }));
+  } catch { console.log(JSON.stringify({ wakeAgent: false })); }
 "'
 ```
 

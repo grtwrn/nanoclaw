@@ -1,10 +1,11 @@
-import { execFile } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { MessageInRow } from '../db/messages-in.js';
 import { touchHeartbeat } from '../db/connection.js';
 
 const SCRIPT_TIMEOUT_MS = 30_000;
+const SCRIPT_KILL_GRACE_MS = 5_000;
 const SCRIPT_MAX_BUFFER = 1024 * 1024;
 
 export interface ScriptResult {
@@ -16,51 +17,108 @@ function log(msg: string): void {
   console.error(`[task-script] ${msg}`);
 }
 
-export async function runScript(script: string, taskId: string): Promise<ScriptResult | null> {
+export async function runScript(
+  script: string,
+  taskId: string,
+  timeoutMs: number = SCRIPT_TIMEOUT_MS,
+): Promise<ScriptResult | null> {
   const scriptPath = path.join('/tmp', `task-script-${taskId}.sh`);
   fs.writeFileSync(scriptPath, script, { mode: 0o755 });
 
   return new Promise((resolve) => {
-    execFile(
-      'bash',
-      [scriptPath],
-      { timeout: SCRIPT_TIMEOUT_MS, maxBuffer: SCRIPT_MAX_BUFFER, env: process.env },
-      (error, stdout, stderr) => {
-        try {
-          fs.unlinkSync(scriptPath);
-        } catch {
-          /* best-effort cleanup */
-        }
+    let stdout = '';
+    let stderr = '';
+    let settled = false;
+    let timedOut = false;
 
-        if (stderr) {
-          log(`[${taskId}] stderr: ${stderr.slice(0, 500)}`);
-        }
+    // detached → the script gets its own process group so a timeout can kill
+    // the whole tree. execFile's `timeout` option only signals bash itself,
+    // and bash defers signals while a foreground child is running — so a
+    // grandchild hung on e.g. a fetch with no timeout kept the exit callback
+    // from ever firing and blocked the poll loop (heartbeat starvation) until
+    // the host's 30-min container ceiling killed the whole session.
+    const child = spawn('bash', [scriptPath], { detached: true, env: process.env });
 
-        if (error) {
-          log(`[${taskId}] error: ${error.message}`);
-          return resolve(null);
-        }
+    const killGroup = (signal: NodeJS.Signals) => {
+      if (child.pid === undefined) return;
+      try {
+        process.kill(-child.pid, signal);
+      } catch {
+        /* process group already gone */
+      }
+    };
 
-        const lines = stdout.trim().split('\n');
-        const lastLine = lines[lines.length - 1];
-        if (!lastLine) {
-          log(`[${taskId}] no output`);
-          return resolve(null);
-        }
+    const finish = (result: ScriptResult | null) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(termTimer);
+      clearTimeout(killTimer);
+      clearTimeout(deadlineTimer);
+      try {
+        fs.unlinkSync(scriptPath);
+      } catch {
+        /* best-effort cleanup */
+      }
+      resolve(result);
+    };
 
-        try {
-          const result = JSON.parse(lastLine);
-          if (typeof result.wakeAgent !== 'boolean') {
-            log(`[${taskId}] output missing wakeAgent boolean: ${lastLine.slice(0, 200)}`);
-            return resolve(null);
-          }
-          resolve(result as ScriptResult);
-        } catch {
-          log(`[${taskId}] output is not valid JSON: ${lastLine.slice(0, 200)}`);
-          resolve(null);
+    const termTimer = setTimeout(() => {
+      timedOut = true;
+      killGroup('SIGTERM');
+    }, timeoutMs);
+    const killTimer = setTimeout(() => killGroup('SIGKILL'), timeoutMs + SCRIPT_KILL_GRACE_MS);
+    // Absolute backstop: resolve even if 'close' never fires (e.g. a setsid'd
+    // descendant escaped the process group while holding the stdio pipes).
+    const deadlineTimer = setTimeout(() => {
+      log(`[${taskId}] script did not exit after kill; abandoning`);
+      finish(null);
+    }, timeoutMs + 2 * SCRIPT_KILL_GRACE_MS);
+
+    child.stdout.on('data', (chunk: Buffer) => {
+      if (stdout.length < SCRIPT_MAX_BUFFER) stdout += chunk.toString();
+    });
+    child.stderr.on('data', (chunk: Buffer) => {
+      if (stderr.length < SCRIPT_MAX_BUFFER) stderr += chunk.toString();
+    });
+
+    child.on('error', (err) => {
+      log(`[${taskId}] spawn error: ${err.message}`);
+      finish(null);
+    });
+
+    child.on('close', (code) => {
+      if (stderr) {
+        log(`[${taskId}] stderr: ${stderr.slice(0, 500)}`);
+      }
+
+      if (timedOut) {
+        log(`[${taskId}] timed out after ${timeoutMs}ms`);
+        return finish(null);
+      }
+      if (code !== 0) {
+        log(`[${taskId}] exited with code ${code}`);
+        return finish(null);
+      }
+
+      const lines = stdout.trim().split('\n');
+      const lastLine = lines[lines.length - 1];
+      if (!lastLine) {
+        log(`[${taskId}] no output`);
+        return finish(null);
+      }
+
+      try {
+        const result = JSON.parse(lastLine);
+        if (typeof result.wakeAgent !== 'boolean') {
+          log(`[${taskId}] output missing wakeAgent boolean: ${lastLine.slice(0, 200)}`);
+          return finish(null);
         }
-      },
-    );
+        finish(result as ScriptResult);
+      } catch {
+        log(`[${taskId}] output is not valid JSON: ${lastLine.slice(0, 200)}`);
+        finish(null);
+      }
+    });
   });
 }
 
