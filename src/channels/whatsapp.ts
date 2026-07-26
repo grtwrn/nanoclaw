@@ -187,6 +187,8 @@ const DOCUMENT_MIMETYPES: Record<string, string> = {
   '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   '.xls': 'application/vnd.ms-excel',
   '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  '.ppt': 'application/vnd.ms-powerpoint',
+  '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   '.csv': 'text/csv',
   '.txt': 'text/plain',
   '.html': 'text/html',
@@ -514,9 +516,17 @@ registerChannelAdapter('whatsapp', {
         }
         return sent?.key?.id ?? undefined;
       } catch (err) {
-        outgoingQueue.push({ jid, text });
-        log.warn('Failed to send, message queued', { jid, err, queueSize: outgoingQueue.length });
-        return undefined;
+        // Do NOT re-queue here. A throw from sock.sendMessage almost always
+        // means the message did not go out (e.g. ghost-LID "No sessions"),
+        // but on a flaky socket it can throw on a send that actually landed.
+        // Re-queuing would flush a duplicate on the next reconnect while the
+        // host has already marked the message delivered (it reads `undefined`
+        // as success) — the host's `delivered`-table dedup can't see a copy
+        // that lives in this adapter's private queue. Instead, propagate the
+        // error so the host's delivery retry loop (capped, idempotent via the
+        // `delivered` table) owns the re-send.
+        log.warn('Failed to send message', { jid, err });
+        throw err;
       }
     }
 
