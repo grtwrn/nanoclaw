@@ -340,6 +340,23 @@ export function appendMediaFailureNote(content: string, failures: string[]): str
   return content ? `${content}\n${note}` : note;
 }
 
+/**
+ * Render a `send_card` payload as WhatsApp text. WhatsApp has no card
+ * primitive, so without this the row falls through the text extraction in
+ * `deliver` (a card has neither `text` nor `markdown`) and is silently
+ * dropped. Cards are frequently questions — a re-auth code, a confirmation —
+ * so a dropped card strands the agent waiting on an answer the user was never
+ * asked for. Returns '' when there is nothing renderable.
+ */
+export function renderCardAsText(content: Record<string, unknown>): string {
+  const fallback = content.fallbackText;
+  if (typeof fallback === 'string' && fallback.trim()) return fallback;
+  const card = (content.card ?? {}) as Record<string, unknown>;
+  const title = typeof card.title === 'string' ? card.title.trim() : '';
+  const description = typeof card.description === 'string' ? card.description.trim() : '';
+  return [title && `*${title}*`, description].filter(Boolean).join('\n\n');
+}
+
 /** Map file extension to Baileys media message type. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildMediaMessage(data: Buffer, filename: string, ext: string, caption?: string): any {
@@ -1038,6 +1055,23 @@ registerChannelAdapter('whatsapp', {
             log.debug('Failed to send reaction', { platformId, err });
           }
           return;
+        }
+
+        // Card → text. WhatsApp has no card primitive, so render the fallback
+        // rather than dropping the row: a card is often a question (re-auth
+        // code, confirmation) and silently discarding it strands the agent
+        // waiting on a reply the user was never asked for.
+        if (content.type === 'card') {
+          const cardText = renderCardAsText(content);
+          if (!cardText) {
+            log.error('card missing title, description and fallbackText — skipping delivery', {
+              platformId,
+            });
+            return;
+          }
+          const { text: formatted, mentions } = formatWhatsApp(cardText);
+          const prefixed = WHATSAPP_SHARED ? `${ASSISTANT_NAME}: ${formatted}` : formatted;
+          return sendRawMessage(platformId, prefixed, mentions);
         }
 
         // Normal message (with optional file attachments)

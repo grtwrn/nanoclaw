@@ -21,6 +21,7 @@ import {
   isBotMentionedInGroup,
   isBotTypedMention,
   parseWhatsAppMentions,
+  renderCardAsText,
   resolveSharedMode,
   rewriteBotLidMention,
 } from './whatsapp.js';
@@ -329,5 +330,42 @@ describe('appendMediaFailureNote', () => {
     expect(appendMediaFailureNote('', ['image', 'document'])).toBe(
       '[image could not be downloaded] [document could not be downloaded]',
     );
+  });
+});
+
+describe('renderCardAsText — send_card on WhatsApp must not be silently dropped', () => {
+  it('prefers an explicit fallbackText', () => {
+    expect(
+      renderCardAsText({
+        type: 'card',
+        card: { title: 'T', description: 'D' },
+        fallbackText: 'plain text',
+      }),
+    ).toBe('plain text');
+  });
+
+  it('builds title + description when fallbackText is absent', () => {
+    expect(
+      renderCardAsText({ type: 'card', card: { title: 'Weee session expired', description: 'Send the code.' } }),
+    ).toBe('*Weee session expired*\n\nSend the code.');
+  });
+
+  it('ignores a blank fallbackText and falls back to the card body', () => {
+    expect(renderCardAsText({ type: 'card', card: { title: 'T', description: 'D' }, fallbackText: '   ' })).toBe(
+      '*T*\n\nD',
+    );
+  });
+
+  it('renders a description-only card without a stray separator', () => {
+    expect(renderCardAsText({ type: 'card', card: { description: 'just this' } })).toBe('just this');
+  });
+
+  it('renders a title-only card', () => {
+    expect(renderCardAsText({ type: 'card', card: { title: 'just title' } })).toBe('*just title*');
+  });
+
+  it('returns empty string when there is nothing renderable, so deliver can log instead of sending blank', () => {
+    expect(renderCardAsText({ type: 'card', card: {} })).toBe('');
+    expect(renderCardAsText({ type: 'card' })).toBe('');
   });
 });
