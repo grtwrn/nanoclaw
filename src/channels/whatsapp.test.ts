@@ -22,6 +22,7 @@ import {
   isBotTypedMention,
   parseWhatsAppMentions,
   renderCardAsText,
+  resolveReactionEmoji,
   resolveSharedMode,
   rewriteBotLidMention,
 } from './whatsapp.js';
@@ -367,5 +368,28 @@ describe('renderCardAsText — send_card on WhatsApp must not be silently droppe
   it('returns empty string when there is nothing renderable, so deliver can log instead of sending blank', () => {
     expect(renderCardAsText({ type: 'card', card: {} })).toBe('');
     expect(renderCardAsText({ type: 'card' })).toBe('');
+  });
+});
+
+describe('resolveReactionEmoji — ack reactions must reach WhatsApp as unicode', () => {
+  it('maps the ack-contract shortcodes add_reaction emits', () => {
+    // These two are the read/reviewed signal; passing the bare word to
+    // Baileys rendered no reaction at all.
+    expect(resolveReactionEmoji('eyes')).toBe('👀');
+    expect(resolveReactionEmoji('white_check_mark')).toBe('✅');
+  });
+
+  it('accepts shortcodes wrapped in colons and mixed case', () => {
+    expect(resolveReactionEmoji(':thumbs_up:')).toBe('👍');
+    expect(resolveReactionEmoji('Fire')).toBe('🔥');
+  });
+
+  it('passes raw unicode through untouched', () => {
+    expect(resolveReactionEmoji('🎉')).toBe('🎉');
+  });
+
+  it('returns empty for an unknown shortcode so deliver logs instead of sending a word', () => {
+    expect(resolveReactionEmoji('not_a_real_emoji')).toBe('');
+    expect(resolveReactionEmoji('   ')).toBe('');
   });
 });

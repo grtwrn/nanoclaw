@@ -108,6 +108,60 @@ const SENT_MESSAGE_CACHE_MAX = 256;
 const RECONNECT_DELAY_MS = 5000;
 const PENDING_QUESTIONS_MAX = 64;
 
+const INBOUND_KEY_CACHE_MAX = 256;
+
+/**
+ * Shortcode → unicode for reactions.
+ *
+ * `add_reaction` takes Slack-style shortcodes ("eyes"), but Baileys puts
+ * `react.text` on the wire verbatim and WhatsApp expects a literal emoji —
+ * sending the word "eyes" produces no visible reaction. Covers the ack
+ * contract plus the shortcodes the tool description advertises.
+ */
+const REACTION_EMOJI: Record<string, string> = {
+  eyes: '👀',
+  white_check_mark: '✅',
+  heavy_check_mark: '✔️',
+  check: '✅',
+  thumbs_up: '👍',
+  '+1': '👍',
+  thumbs_down: '👎',
+  '-1': '👎',
+  heart: '❤️',
+  fire: '🔥',
+  tada: '🎉',
+  thinking_face: '🤔',
+  pray: '🙏',
+  raised_hands: '🙌',
+  clap: '👏',
+  rocket: '🚀',
+  warning: '⚠️',
+  x: '❌',
+  question: '❓',
+  hourglass: '⏳',
+  wave: '👋',
+  ok_hand: '👌',
+  100: '💯',
+  bulb: '💡',
+  sos: '🆘',
+};
+
+/**
+ * Resolve a reaction payload to a unicode emoji WhatsApp will render.
+ * Accepts a shortcode with or without wrapping colons; a raw emoji passes
+ * through so a future caller sending "👀" still works. Returns '' when the
+ * value is an unknown shortcode, so the caller can log rather than emit a
+ * reaction that silently renders as nothing.
+ */
+export function resolveReactionEmoji(value: string): string {
+  const raw = value.trim();
+  if (!raw) return '';
+  const key = raw.replace(/^:|:$/g, '').toLowerCase();
+  if (REACTION_EMOJI[key]) return REACTION_EMOJI[key];
+  // Not a bare word → assume the caller already sent unicode.
+  return /^[a-z0-9_+-]+$/.test(key) ? '' : raw;
+}
+
 /** Normalize an option label to a slash command: "Approve" → "/approve" */
 function optionToCommand(option: string): string {
   return '/' + option.toLowerCase().replace(/\s+/g, '-');
@@ -451,6 +505,12 @@ registerChannelAdapter('whatsapp', {
 
     // Sent message cache for retry/re-encrypt requests
     const sentMessageCache = new Map<string, any>();
+
+    // Inbound message keys, for building reaction keys later. A reaction must
+    // reproduce the original message's key: in groups that includes
+    // `participant` (the original sender), and WhatsApp ignores a reaction
+    // whose key doesn't match a message it knows.
+    const inboundKeyCache = new Map<string, { participant?: string; fromMe: boolean }>();
 
     // Group metadata cache with TTL
     const groupMetadataCache = new Map<string, { metadata: GroupMetadata; expiresAt: number }>();
@@ -943,8 +1003,20 @@ registerChannelAdapter('whatsapp', {
                   !hasMentionPills(normalized) &&
                   isBotTypedMention(content, ASSISTANT_NAME, botPhoneJid)));
 
+            const inboundId = msg.key.id || `wa-${Date.now()}`;
+            // Remember the key so a later add_reaction can target this message.
+            if (msg.key.id) {
+              inboundKeyCache.set(msg.key.id, {
+                participant: msg.key.participant || undefined,
+                fromMe,
+              });
+              if (inboundKeyCache.size > INBOUND_KEY_CACHE_MAX) {
+                inboundKeyCache.delete(inboundKeyCache.keys().next().value!);
+              }
+            }
+
             const inbound: InboundMessage = {
-              id: msg.key.id || `wa-${Date.now()}`,
+              id: inboundId,
               kind: 'chat',
               // Dedicated mode: DMs are addressed to the bot by definition.
               // Mark them as platform-confirmed mentions so the router
@@ -1044,15 +1116,29 @@ registerChannelAdapter('whatsapp', {
 
         // Reaction → emoji on a message
         if (content.operation === 'reaction' && content.messageId && content.emoji) {
+          const targetId = content.messageId as string;
+          const shortcode = content.emoji as string;
+          const emoji = resolveReactionEmoji(shortcode);
+          if (!emoji) {
+            log.error('Unknown reaction shortcode — skipping', { platformId, shortcode });
+            return;
+          }
+          // Reproduce the original message key. Groups need `participant`;
+          // reacting to our own message needs fromMe=true. Fall back to a DM
+          // shaped key when the message predates the cache.
+          const cached = inboundKeyCache.get(targetId);
+          const key: Record<string, unknown> = {
+            remoteJid: platformId,
+            id: targetId,
+            fromMe: cached?.fromMe ?? sentMessageCache.has(targetId),
+          };
+          if (cached?.participant) key.participant = cached.participant;
           try {
-            await sock.sendMessage(platformId, {
-              react: {
-                text: content.emoji as string,
-                key: { remoteJid: platformId, id: content.messageId as string, fromMe: false },
-              },
-            });
+            await sock.sendMessage(platformId, { react: { text: emoji, key } });
           } catch (err) {
-            log.debug('Failed to send reaction', { platformId, err });
+            // Reactions are the read/ack signal — a silent failure looks to the
+            // user like the agent ignored them, so log at error level.
+            log.error('Failed to send reaction', { platformId, targetId, emoji, err });
           }
           return;
         }
