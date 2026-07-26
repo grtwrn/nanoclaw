@@ -457,6 +457,13 @@ async function buildContainerArgs(
     }
   }
 
+  // Published ports — lets an agent run a server inside its container that is
+  // reachable from the host/LAN. Specs are docker `-p` strings (e.g.
+  // "3456:3456" or "127.0.0.1:8080:8080"), configured per agent group.
+  for (const spec of containerConfig.ports ?? []) {
+    args.push('-p', spec);
+  }
+
   // Override entrypoint: run v2 entry point directly via Bun (no tsc, no stdin).
   args.push('--entrypoint', 'bash');
 

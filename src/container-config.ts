@@ -35,6 +35,7 @@ export interface ContainerConfig {
   packages: { apt: string[]; npm: string[] };
   imageTag?: string;
   additionalMounts: AdditionalMountConfig[];
+  ports: string[];
   skills: string[] | 'all';
   provider?: string;
   groupName?: string;
@@ -55,6 +56,7 @@ export function configFromDb(row: ContainerConfigRow, group: AgentGroup): Contai
     },
     imageTag: row.image_tag ?? undefined,
     additionalMounts: JSON.parse(row.additional_mounts) as AdditionalMountConfig[],
+    ports: JSON.parse(row.ports ?? '[]') as string[],
     skills: JSON.parse(row.skills) as string[] | 'all',
     provider: row.provider ?? undefined,
     groupName: group.name,

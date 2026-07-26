@@ -27,6 +27,7 @@ function presentConfig(row: ContainerConfigRow): Record<string, unknown> {
     packages_apt: JSON.parse(row.packages_apt),
     packages_npm: JSON.parse(row.packages_npm),
     additional_mounts: JSON.parse(row.additional_mounts),
+    ports: JSON.parse(row.ports ?? '[]'),
     cli_scope: row.cli_scope,
     updated_at: row.updated_at,
   };
@@ -251,6 +252,44 @@ registerResource({
 
         const updated = getContainerConfig(id)!;
         return presentConfig(updated);
+      },
+    },
+    'config set-ports': {
+      access: 'approval',
+      description:
+        'Set the published ports for a group, replacing any existing list. Requires `ncl groups restart` to take effect. ' +
+        'Use --id <group-id> --ports <comma-or-json-list>, e.g. --ports "3456:3456,127.0.0.1:8080:8080". ' +
+        'Pass --ports "" or "[]" to clear. Each spec is a docker -p publish string.',
+      handler: async (args) => {
+        const id = args.id as string;
+        if (!id) throw new Error('--id is required');
+        const row = getContainerConfig(id);
+        if (!row) throw new Error(`No container config for group: ${id}`);
+
+        const raw = (args.ports ?? '') as string;
+        let ports: string[];
+        const trimmed = raw.trim();
+        if (trimmed === '' || trimmed === '[]') {
+          ports = [];
+        } else if (trimmed.startsWith('[')) {
+          ports = JSON.parse(trimmed) as string[];
+        } else {
+          ports = trimmed
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+        }
+
+        // Validate each spec: optional host-ip, host port, container port, optional /proto.
+        const specRe = /^(?:\d{1,3}(?:\.\d{1,3}){3}:)?\d{1,5}:\d{1,5}(?:\/(?:tcp|udp))?$/;
+        for (const spec of ports) {
+          if (!specRe.test(spec)) {
+            throw new Error(`Invalid port spec: "${spec}". Expected "HOST:CONTAINER" or "IP:HOST:CONTAINER".`);
+          }
+        }
+
+        updateContainerConfigJson(id, 'ports', ports);
+        return presentConfig(getContainerConfig(id)!);
       },
     },
     'config add-mcp-server': {
