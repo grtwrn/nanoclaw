@@ -78,11 +78,28 @@ export function writeMessageOut(msg: WriteMessageOut): number {
 }
 
 /**
+ * Strip the agent-group namespace the host appends to inbound message ids.
+ *
+ * `messageIdForAgent()` in src/router.ts writes `<platformId>:<agentGroupId>`
+ * so fan-out to several sessions can't collide on the messages_in PRIMARY KEY.
+ * That suffix is host bookkeeping — a platform asked to react to
+ * "AC6B...:ag-1776976018324-bxbm4t" finds no such message and drops the
+ * reaction silently, which is why acks never appeared.
+ *
+ * Only a trailing `:ag-…` segment is removed, so ids that legitimately contain
+ * colons (Telegram's "6037840640:42") survive untouched.
+ */
+export function stripAgentGroupNamespace(id: string): string {
+  return id.replace(/:ag-[A-Za-z0-9-]+$/, '');
+}
+
+/**
  * Look up a message's platform ID by seq number.
  * Searches both inbound and outbound DBs since seq spans both.
  *
- * For inbound messages, the Chat SDK message ID is already the platform message ID
- * (e.g., "6037840640:42" for Telegram).
+ * For inbound messages, the stored ID is the platform message ID
+ * (e.g., "6037840640:42" for Telegram) namespaced by agent group — strip the
+ * namespace before handing it to a channel adapter.
  *
  * For outbound messages, the internal ID (msg-xxx) won't work for edits/reactions.
  * Instead, look up the platform_message_id from the delivered table (host writes this
@@ -91,11 +108,11 @@ export function writeMessageOut(msg: WriteMessageOut): number {
 export function getMessageIdBySeq(seq: number): string | null {
   const inbound = getInboundDb();
 
-  // Inbound messages: ID is already the platform message ID
+  // Inbound messages: ID is the platform message ID plus the host's namespace
   const inRow = inbound.prepare('SELECT id FROM messages_in WHERE seq = ?').get(seq) as
     | { id: string }
     | undefined;
-  if (inRow) return inRow.id;
+  if (inRow) return stripAgentGroupNamespace(inRow.id);
 
   // Outbound messages: look up platform message ID from delivered table
   const outRow = getOutboundDb().prepare('SELECT id FROM messages_out WHERE seq = ?').get(seq) as
