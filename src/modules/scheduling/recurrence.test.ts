@@ -160,16 +160,14 @@ describe('handleRecurrence', () => {
   // A series must run as ONE chain. Spawning per completed-row let a series fork
   // into two parallel chains that double-fired forever (duplicate reminders).
   function seedCompletedRecurring(db: ReturnType<typeof openInboundDb>, id: string, seriesId: string) {
-    insertTask(db, {
+    insertTaskRow(db, {
       id,
+      seriesId,
       processAfter: '2020-01-01T00:00:00.000Z',
       recurrence: '*/10 * * * *',
-      platformId: null,
-      channelType: null,
-      threadId: null,
       content: JSON.stringify({ prompt: 'noop' }),
     });
-    db.prepare(`UPDATE messages_in SET status='completed', series_id=? WHERE id=?`).run(seriesId, id);
+    db.prepare(`UPDATE messages_in SET status='completed' WHERE id=?`).run(id);
   }
 
   it('converges a forked series (two completed chains) back to one live row', async () => {
@@ -192,16 +190,13 @@ describe('handleRecurrence', () => {
   it('does not spawn when the series already has a live occurrence', async () => {
     const db = freshDb();
     seedCompletedRecurring(db, 'task-done', 'series-c');
-    insertTask(db, {
+    insertTaskRow(db, {
       id: 'task-live',
+      seriesId: 'series-c',
       processAfter: new Date(Date.now() + 600000).toISOString(),
       recurrence: '*/10 * * * *',
-      platformId: null,
-      channelType: null,
-      threadId: null,
       content: JSON.stringify({ prompt: 'noop' }),
     });
-    db.prepare(`UPDATE messages_in SET series_id='series-c' WHERE id='task-live'`).run();
 
     await handleRecurrence(db, fakeSession());
 

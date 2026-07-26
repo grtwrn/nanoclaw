@@ -36,7 +36,7 @@ export interface ContainerConfig {
   packages: { apt: string[]; npm: string[] };
   imageTag?: string;
   additionalMounts: AdditionalMountConfig[];
-  ports: string[];
+  ports?: string[];
   skills: string[] | 'all';
   provider?: string;
   groupName?: string;

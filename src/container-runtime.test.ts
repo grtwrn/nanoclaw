@@ -67,7 +67,7 @@ describe('ensureContainerRuntimeRunning', () => {
     expect(mockExecSync).toHaveBeenCalledTimes(1);
     expect(mockExecSync).toHaveBeenCalledWith(`${CONTAINER_RUNTIME_BIN} info`, {
       stdio: 'pipe',
-      timeout: 10000,
+      timeout: 60000,
     });
     expect(log.debug).toHaveBeenCalledWith('Container runtime already running');
   });

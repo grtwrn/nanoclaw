@@ -24,7 +24,7 @@ export interface ContainerConfigRow {
   packages_apt: string; // JSON: string[]
   packages_npm: string; // JSON: string[]
   additional_mounts: string; // JSON: AdditionalMountConfig[]
-  ports: string; // JSON: string[] of docker publish specs, e.g. ["3456:3456"]
+  ports?: string; // JSON: string[] of docker publish specs, e.g. ["3456:3456"]
   cli_scope: string; // 'disabled' | 'group' | 'global'
   timezone: string | null; // IANA id; NULL = follow the install-global timezone
   updated_at: string;
