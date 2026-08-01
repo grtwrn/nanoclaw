@@ -39,7 +39,6 @@ import {
 import type { GroupMetadata, WAMessageKey, WAMessage, WASocket } from '@whiskeysockets/baileys';
 
 import { isSafeAttachmentName } from '../attachment-safety.js';
-import { DATA_DIR } from '../config.js';
 import { readEnvFile } from '../env.js';
 import { log } from '../log.js';
 import { registerChannelAdapter } from './channel-registry.js';
@@ -644,13 +643,29 @@ registerChannelAdapter('whatsapp', {
       }
     }
 
-    /** Download media from an inbound message, save to /workspace/attachments/. */
+    /**
+     * Download media from an inbound message and hand it back as base64 `data`.
+     *
+     * The host stages inbound attachments itself: `extractAttachmentFiles` in
+     * session-manager.ts writes any attachment carrying `data` into the
+     * session's own `inbox/<messageId>/` dir and rewrites `localPath` to
+     * `inbox/<messageId>/<file>`, which resolves under the container's
+     * `/workspace` mount. An adapter that writes media somewhere else and sets
+     * its own `localPath` produces a path the container cannot see — the agent
+     * is told a file exists and finds nothing there.
+     */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async function downloadInboundMedia(
       msg: WAMessage,
       normalized: any,
     ): Promise<{
-      attachments: Array<{ type: string; name: string; localPath: string }>;
+      attachments: Array<{
+        type: string;
+        name: string;
+        mimeType?: string;
+        size?: number;
+        data: string;
+      }>;
       failures: string[];
     }> {
       const mediaTypes: Array<{ key: string; type: string; ext: string }> = [
@@ -659,7 +674,13 @@ registerChannelAdapter('whatsapp', {
         { key: 'audioMessage', type: 'audio', ext: '.ogg' },
         { key: 'documentMessage', type: 'document', ext: '' },
       ];
-      const results: Array<{ type: string; name: string; localPath: string }> = [];
+      const results: Array<{
+        type: string;
+        name: string;
+        mimeType?: string;
+        size?: number;
+        data: string;
+      }> = [];
       const failures: string[] = [];
       for (const { key, type, ext } of mediaTypes) {
         if (!normalized[key]) continue;
@@ -675,23 +696,27 @@ registerChannelAdapter('whatsapp', {
             { reuploadRequest: sock.updateMediaMessage, logger: baileysLogger },
           );
           // documentMessage.fileName is attacker-controlled and rides through
-          // WhatsApp's E2E channel — Meta can't sanitize it server-side. Without
-          // this guard, a `..`-laden fileName escapes attachDir on path.join.
+          // WhatsApp's E2E channel — Meta can't sanitize it server-side. The
+          // host re-checks the name before staging, but a `..`-laden fileName
+          // is never worth forwarding, so drop it here too.
           const rawFilename = normalized[key].fileName;
           const fallback = `${type}-${Date.now()}${ext}`;
           const filename = isSafeAttachmentName(rawFilename) ? rawFilename : fallback;
           if (rawFilename && filename !== rawFilename) {
-            log.warn('Refused unsafe attachment filename — would escape attachments dir', {
+            log.warn('Refused unsafe attachment filename — would escape the inbox dir', {
               rawFilename,
               replacement: filename,
             });
           }
-          const attachDir = path.join(DATA_DIR, 'attachments');
-          fs.mkdirSync(attachDir, { recursive: true });
-          const filePath = path.join(attachDir, filename);
-          fs.writeFileSync(filePath, buffer);
-          results.push({ type, name: filename, localPath: `attachments/${filename}` });
-          log.info('Media downloaded', { type, filename });
+          const mimeType = normalized[key].mimetype;
+          results.push({
+            type,
+            name: filename,
+            ...(typeof mimeType === 'string' && mimeType ? { mimeType } : {}),
+            size: buffer.length,
+            data: buffer.toString('base64'),
+          });
+          log.info('Media downloaded', { type, filename, size: buffer.length });
         } catch (err) {
           log.warn('Failed to download media', { type, err });
           failures.push(type);
