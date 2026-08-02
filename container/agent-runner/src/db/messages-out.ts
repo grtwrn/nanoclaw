@@ -78,6 +78,43 @@ export function writeMessageOut(msg: WriteMessageOut): number {
 }
 
 /**
+ * Highest seq currently in messages_out, or 0 when empty. Used as a turn
+ * watermark for cross-door duplicate suppression (see turn-sends.ts).
+ */
+export function getMaxOutboundSeq(): number {
+  const row = getOutboundDb().prepare('SELECT COALESCE(MAX(seq), 0) AS m FROM messages_out').get() as { m: number };
+  return row.m;
+}
+
+/**
+ * Text of every `chat` row written to one destination after `sinceSeq`.
+ *
+ * The MCP tools run in their own process, so this table — not memory — is
+ * how the final-text delivery door learns what `send_message` already sent
+ * during this turn.
+ */
+export function getOutboundChatSince(sinceSeq: number, channelType: string, platformId: string): string[] {
+  const rows = getOutboundDb()
+    .prepare(
+      `SELECT content FROM messages_out
+       WHERE seq > ? AND kind = 'chat' AND channel_type = ? AND platform_id = ?`,
+    )
+    .all(sinceSeq, channelType, platformId) as Array<{ content: string }>;
+
+  const texts: string[] = [];
+  for (const row of rows) {
+    try {
+      const text = (JSON.parse(row.content) as { text?: unknown }).text;
+      if (typeof text === 'string') texts.push(text);
+    } catch {
+      // A row we can't parse can't be matched against — skip it rather than
+      // failing the send.
+    }
+  }
+  return texts;
+}
+
+/**
  * Strip the agent-group namespace the host appends to inbound message ids.
  *
  * `messageIdForAgent()` in src/router.ts writes `<platformId>:<agentGroupId>`

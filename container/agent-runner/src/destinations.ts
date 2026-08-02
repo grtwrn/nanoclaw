@@ -134,6 +134,10 @@ function buildDestinationsSection(mode: SessionMode): string {
   );
   lines.push('');
   lines.push(
+    'Anything you already sent with `send_message` this turn has been delivered — never repeat it in a final `<message>` block, or the reader sees it twice. If the tool call already said everything, close the turn with `<internal>…</internal>` instead.',
+  );
+  lines.push('');
+  lines.push(
     'For a short turn, do not narrate. For longer work, send one acknowledgment and then updates only at meaningful milestones, especially before slow operations. Never narrate micro-steps; finish with the outcome, not a play-by-play.',
   );
   return lines.join('\n');

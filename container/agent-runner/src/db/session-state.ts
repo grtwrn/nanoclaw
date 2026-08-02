@@ -121,3 +121,34 @@ export function getCurrentInReplyTo(): string | null {
   if (!Number.isFinite(age) || age > IN_REPLY_TO_MAX_AGE_MS) return null;
   return row.value;
 }
+
+/**
+ * Turn watermark for cross-door duplicate suppression: the highest
+ * messages_out seq that existed when the current turn began. Published by the
+ * poll loop, read by both delivery doors — including `send_message`, which
+ * runs in the MCP subprocess and shares nothing but this DB.
+ *
+ * See turn-sends.ts for the failure this prevents.
+ */
+const TURN_START_SEQ_KEY = 'turn_start_seq';
+
+export function setTurnStartSeq(seq: number): void {
+  setValue(TURN_START_SEQ_KEY, String(seq));
+}
+
+/**
+ * Null when absent or stale. Callers must treat null as "can't tell" and
+ * deliver — suppressing a message the user should have seen is the worse
+ * failure, so a container killed mid-turn never leaves a watermark that
+ * silences the next one.
+ */
+export function getTurnStartSeq(): number | null {
+  const row = getOutboundDb()
+    .prepare('SELECT value, updated_at FROM session_state WHERE key = ?')
+    .get(TURN_START_SEQ_KEY) as { value: string; updated_at: string } | undefined;
+  if (!row) return null;
+  const age = Date.now() - new Date(row.updated_at).getTime();
+  if (!Number.isFinite(age) || age > IN_REPLY_TO_MAX_AGE_MS) return null;
+  const seq = Number(row.value);
+  return Number.isInteger(seq) ? seq : null;
+}

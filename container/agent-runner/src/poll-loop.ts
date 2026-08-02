@@ -24,6 +24,7 @@ import {
   stripInternalTags,
   type RoutingContext,
 } from './formatter.js';
+import { resetTurnSends, wasSentThisTurn } from './turn-sends.js';
 import { isUploadTraceCommand, uploadTrace } from './upload-trace.js';
 import type { AgentProvider, AgentQuery, ProviderEvent, ProviderExchange } from './providers/types.js';
 
@@ -249,6 +250,9 @@ export async function runPollLoop(config: PollLoopConfig): Promise<void> {
     // Publish the batch's in_reply_to so MCP tools (send_message, send_file)
     // can stamp it on outbound rows — needed for a2a return-path routing.
     setCurrentInReplyTo(routing.inReplyTo);
+    // New input — anything the agent sent for the previous turn is history,
+    // and repeating it now would be a genuine second answer, not an echo.
+    resetTurnSends();
     try {
       const result = await processQuery(
         query,
@@ -438,6 +442,9 @@ export async function processQuery(
         log(`Pushing ${keep.length} follow-up message(s) into active query`);
         unwrappedNudged = false;
         taskBlockNudged = false;
+        // A follow-up starts a new turn. Nudge pushes deliberately do NOT
+        // reset — a re-send after a nudge is exactly the echo we suppress.
+        resetTurnSends();
         query.push(prompt);
         archivePrompts.push(prompt);
         markCompleted(keptIds);
@@ -685,6 +692,9 @@ export function dispatchResultText(
       scratchpadParts.push(`[dropped: unknown destination "${toName}"] ${body}`);
       continue;
     }
+    // Count a suppressed echo as sent: the content did reach the user, via
+    // send_message earlier this turn. Treating it as unsent would trip the
+    // "your response was not delivered" nudge and produce a third copy.
     sendToDestination(dest, body, routing);
     sent++;
   }
@@ -765,9 +775,18 @@ export function autoAppendTaskLog(text: string): void {
   log('Task run log auto-appended from final text');
 }
 
-function sendToDestination(dest: DestinationEntry, body: string, routing: RoutingContext): void {
+/**
+ * Deliver one final-text `<message to>` block. Returns false when the block
+ * merely echoes something `send_message` already delivered this turn — the
+ * content reached the user once, so the caller still counts it as sent.
+ */
+function sendToDestination(dest: DestinationEntry, body: string, routing: RoutingContext): boolean {
   const platformId = dest.type === 'channel' ? dest.platformId! : dest.agentGroupId!;
   const channelType = dest.type === 'channel' ? dest.channelType! : 'agent';
+  if (wasSentThisTurn(channelType, platformId, body)) {
+    log(`Duplicate suppressed: <message to="${dest.name}"> repeats text already sent this turn via send_message`);
+    return false;
+  }
   // Resolve thread_id per-destination from the most recent inbound message
   // that came from this same channel+platform. In agent-shared sessions,
   // different destinations have different thread contexts — using a single
@@ -782,6 +801,7 @@ function sendToDestination(dest: DestinationEntry, body: string, routing: Routin
     thread_id: destRouting?.threadId ?? null,
     content: JSON.stringify({ text: body }),
   });
+  return true;
 }
 
 /**
